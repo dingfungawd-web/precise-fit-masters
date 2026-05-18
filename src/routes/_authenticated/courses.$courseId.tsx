@@ -21,20 +21,21 @@ const COURSE_CONFIG: Record<
   }
 > = {
   "1": {
-    description:
-      "認識基本門窗類型。每個款式記錄：類型名稱、結構說明、基本／進階度尺方法、相片、影片。",
-    groupBy: "分類",
-    titleField: "類型名稱",
+    description: "認識基本門窗類型，按門窗分類 → 款式 → 細分結構及度尺要點。",
+    groupBy: "門窗分類",
+    titleField: "款式名稱",
     fields: [
-      { key: "結構說明", label: "結構說明", long: true },
-      { key: "基本度尺方法", label: "基本度尺方法", long: true },
-      { key: "進階度尺方法", label: "進階度尺方法", long: true },
+      { key: "常用樓宇", label: "常用樓宇" },
+      { key: "細分", label: "細分" },
+      { key: "結構", label: "結構", long: true },
+      { key: "基本度尺", label: "基本度尺", long: true },
+      { key: "常見伏位", label: "常見伏位", long: true },
     ],
   },
   "2": {
-    description: "鋁通料目錄，按大分類顯示，每個細分有用途及組合說明。",
-    groupBy: "大分類",
-    titleField: "細分",
+    description: "鋁通料目錄，按通料名稱分類，每個細分有用途及組合說明。",
+    groupBy: "通料名稱",
+    titleField: "細心",
     fields: [
       { key: "用途", label: "用途", long: true },
       { key: "組合", label: "組合", long: true },
@@ -42,23 +43,21 @@ const COURSE_CONFIG: Record<
   },
   "3": {
     description: "產品款式及測量方法。涵蓋規格、極限尺寸、做法、度尺方法及錯誤案例。",
-    groupBy: "分類",
+    groupBy: "供應商",
     titleField: "款式名稱",
     fields: [
-      { key: "供應商", label: "供應商" },
-      { key: "匹配門窗", label: "匹配門窗" },
+      { key: "安裝場景", label: "安裝場景" },
       { key: "功能", label: "功能" },
-      { key: "框色選擇", label: "框色選擇" },
-      { key: "網材選擇", label: "網材選擇" },
+      { key: "框色選擇", label: "框色選擇", long: true },
+      { key: "網材選擇", label: "網材選擇", long: true },
       { key: "產品規格", label: "產品規格", long: true },
-      { key: "極限尺寸", label: "極限尺寸" },
-      { key: "常見做法", label: "常見做法", long: true },
-      { key: "特別做法", label: "特別做法", long: true },
-      { key: "決策流程樹", label: "決策流程樹", long: true },
-      { key: "度尺口訣", label: "度尺口訣", long: true },
+      { key: "極限尺寸", label: "極限尺寸", long: true },
+      { key: "款式常見做法", label: "款式常見做法", long: true },
+      { key: "款式特別做法", label: "款式特別做法", long: true },
+      { key: "款式度尺口訣", label: "款式度尺口訣", long: true },
       { key: "基本度尺方法", label: "基本度尺方法", long: true },
       { key: "進階度尺方法", label: "進階度尺方法", long: true },
-      { key: "錯誤案例", label: "錯誤案例", long: true },
+      { key: "錯誤案例庫", label: "錯誤案例庫", long: true },
     ],
   },
 };
@@ -129,13 +128,6 @@ function CoursePage() {
             <Card className="border-destructive/50 bg-destructive/5 p-6 text-sm">
               <p className="font-medium text-destructive">無法讀取 Google Sheets</p>
               <p className="mt-1 text-muted-foreground">{(error as Error).message}</p>
-              <p className="mt-2 text-xs text-muted-foreground">
-                請確認 Apps Script 已部署、SHEETS_API_URL 正確，並且工作表名稱為「{COURSE_CONFIG[courseId] && ({
-                  "1": "course1_types",
-                  "2": "course2_aluminium",
-                  "3": "course3_products",
-                } as Record<string, string>)[courseId]}」。
-              </p>
             </Card>
           )}
 
