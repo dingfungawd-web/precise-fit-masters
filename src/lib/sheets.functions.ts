@@ -26,15 +26,22 @@ export const getCourseSheet = createServerFn({ method: "GET" })
     const target = `${url}${url.includes("?") ? "&" : "?"}sheet=${encodeURIComponent(sheetName)}`;
 
     const res = await fetch(target, { redirect: "follow" });
+    const bodyText = await res.text();
+
     if (!res.ok) {
-      throw new Error(`Google Sheets API 回傳 ${res.status}`);
+      throw new Error(`Google Sheets API 回傳 ${res.status}: ${bodyText.slice(0, 200)}`);
     }
-    const json = (await res.json()) as {
-      ok: boolean;
-      error?: string;
-      data?: Record<string, SheetRow[] | { error: string }>;
-    };
+
+    let json: { ok: boolean; error?: string; data?: Record<string, SheetRow[] | { error: string }> };
+    try {
+      json = JSON.parse(bodyText);
+    } catch {
+      throw new Error(
+        `Google Sheets API 回傳咗 HTML 而唔係 JSON。請確認 SHEETS_API_URL 係以 /exec 結尾、部署時「誰可存取」揀「所有人 (Anyone)」、並且部署版本係最新。前 200 字：${bodyText.slice(0, 200)}`,
+      );
+    }
     if (!json.ok) throw new Error(json.error || "Google Sheets API 失敗");
+
 
     const payload = json.data?.[sheetName];
     if (!payload) throw new Error("找不到對應工作表");
