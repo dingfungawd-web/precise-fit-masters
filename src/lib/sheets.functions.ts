@@ -1,10 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
-export type SheetRow = Record<string, unknown> & {
-  id?: string;
-  sort?: number;
-  published?: boolean;
-};
+export type SheetCellValue = string | number | boolean | string[];
+export type SheetRow = { [key: string]: SheetCellValue };
 
 export type SheetName = "course1_types" | "course2_aluminium" | "course3_products";
 
