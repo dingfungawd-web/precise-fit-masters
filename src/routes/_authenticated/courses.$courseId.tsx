@@ -193,8 +193,8 @@ function ItemBlock({
   row: SheetRow;
   config: (typeof COURSE_CONFIG)[string];
 }) {
-  const photos = toArray(row.photos);
-  const videos = toArray(row.videos);
+  const photos = toArray(row["相片"]);
+  const videos = toArray(row["影片"]);
 
   return (
     <div className="rounded-lg border bg-card p-4">
