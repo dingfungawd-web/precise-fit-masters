@@ -43,9 +43,10 @@ const COURSE_CONFIG: Record<
   },
   "3": {
     description: "產品款式及測量方法。涵蓋規格、極限尺寸、做法、度尺方法及錯誤案例。",
-    groupBy: "供應商",
+    groupBy: "門窗分類",
     titleField: "款式名稱",
     fields: [
+      { key: "供應商", label: "供應商" },
       { key: "安裝場景", label: "安裝場景" },
       { key: "功能", label: "功能" },
       { key: "框色選擇", label: "框色選擇", long: true },
