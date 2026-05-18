@@ -1,10 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { Database } from "@/integrations/supabase/types";
 
-async function assertAdmin(supabase: Awaited<ReturnType<typeof import("@/integrations/supabase/auth-middleware").requireSupabaseAuth.server>>["context"]["supabase"], userId: string) {
-  // Use the user-scoped client so the check obeys RLS (user can read own roles).
+type UserClient = SupabaseClient<Database>;
+// keep createClient referenced so import isn't pruned (type helper above uses generic)
+void createClient;
+
+async function assertAdmin(supabase: UserClient, userId: string) {
   const { data, error } = await supabase
     .from("user_roles")
     .select("role")
