@@ -3,12 +3,12 @@ import { createServerFn } from "@tanstack/react-start";
 export type SheetCellValue = string | number | boolean | string[];
 export type SheetRow = { [key: string]: SheetCellValue };
 
-export type SheetName = "course1_types" | "course2_aluminium" | "course3_products";
+export type SheetName = "課程一_門窗類型" | "課程二_鋁通料" | "課程三_產品款式";
 
 const COURSE_TO_SHEET: Record<string, SheetName> = {
-  "1": "course1_types",
-  "2": "course2_aluminium",
-  "3": "course3_products",
+  "1": "課程一_門窗類型",
+  "2": "課程二_鋁通料",
+  "3": "課程三_產品款式",
 };
 
 export const getCourseSheet = createServerFn({ method: "GET" })
