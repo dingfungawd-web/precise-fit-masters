@@ -46,6 +46,7 @@ const COURSE_CONFIG: Record<
     groupBy: "門窗分類",
     titleField: "款式名稱",
     fields: [
+      { key: "供應商", label: "供應商" },
       { key: "安裝場景", label: "安裝場景" },
       { key: "功能", label: "功能" },
       { key: "框色選擇", label: "框色選擇", long: true },
