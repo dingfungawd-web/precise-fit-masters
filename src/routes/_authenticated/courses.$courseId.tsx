@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/courses/$courseId")({
   component: CoursePage,
 });
 
-const COURSE_CONFIG: Record<
+export const COURSE_CONFIG: Record<
   string,
   {
     description: string;
