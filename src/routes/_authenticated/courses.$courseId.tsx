@@ -132,7 +132,14 @@ function CoursePage() {
             </Card>
           )}
 
-          {data && <SheetContent rows={data.rows} config={config} />}
+          {data && (
+            <SheetContent
+              rows={data.rows}
+              config={config}
+              courseId={courseId}
+              listOnly={courseId === "3"}
+            />
+          )}
         </div>
       )}
     </main>
@@ -142,14 +149,18 @@ function CoursePage() {
 function SheetContent({
   rows,
   config,
+  courseId,
+  listOnly,
 }: {
   rows: SheetRow[];
   config: (typeof COURSE_CONFIG)[string];
+  courseId: string;
+  listOnly?: boolean;
 }) {
   if (rows.length === 0) {
     return (
       <Card className="p-8 text-center text-sm text-muted-foreground">
-        工作表暫無已發佈內容（published = TRUE）。
+        工作表暫無內容。
       </Card>
     );
   }
@@ -168,10 +179,24 @@ function SheetContent({
           <h2 className="text-base font-semibold">
             {groupName} <span className="text-xs font-normal text-muted-foreground">（{groupRows.length}）</span>
           </h2>
-          <div className="mt-4 space-y-6">
-            {groupRows.map((row, idx) => (
-              <ItemBlock key={String(row.id ?? idx)} row={row} config={config} />
-            ))}
+          <div className={listOnly ? "mt-4 grid gap-2 sm:grid-cols-2" : "mt-4 space-y-6"}>
+            {groupRows.map((row, idx) => {
+              const name = String(row[config.titleField] ?? "（未命名）");
+              if (listOnly) {
+                return (
+                  <Link
+                    key={`${name}-${idx}`}
+                    to="/courses/$courseId/$itemName"
+                    params={{ courseId, itemName: name }}
+                    className="flex items-center justify-between rounded-lg border bg-card px-4 py-3 text-sm font-medium hover:bg-accent/40 hover:border-accent transition-colors"
+                  >
+                    <span>{name}</span>
+                    <span className="text-muted-foreground">›</span>
+                  </Link>
+                );
+              }
+              return <ItemBlock key={String(row.id ?? idx)} row={row} config={config} />;
+            })}
           </div>
         </Card>
       ))}
