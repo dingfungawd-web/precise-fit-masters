@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courses";
 import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
 import { COURSE_CONFIG } from "@/lib/course-config";
+import { parseVideos, YouTubeVideoList } from "@/components/youtube-videos";
 
 export const Route = createFileRoute("/_authenticated/courses/$courseId/$itemName")({
   component: ItemDetailPage,
