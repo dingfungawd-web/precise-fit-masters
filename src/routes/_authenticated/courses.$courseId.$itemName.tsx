@@ -23,6 +23,12 @@ function ItemDetailPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["course-sheet", courseId],
     queryFn: () => fetchSheet({ data: { courseId } }),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: (count, err) => {
+      if ((err as Error)?.message?.includes("429")) return false;
+      return count < 2;
+    },
   });
 
   const row = data?.rows.find((r) => String(r[config.titleField] ?? "") === itemName);
