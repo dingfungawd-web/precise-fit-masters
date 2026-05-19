@@ -44,11 +44,11 @@ function ItemDetailPage() {
         <ArrowLeft className="mr-1 h-4 w-4" /> 返回 {course.title}
       </Link>
 
-      <div className="mt-4 mb-6">
+      <div className="mt-4 mb-8">
         <div className="text-sm font-medium text-accent">{course.number}</div>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">{itemName}</h1>
+        <h1 className="mt-2 text-4xl md:text-5xl font-bold tracking-tight">{itemName}</h1>
         {row && (
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-3 text-base text-muted-foreground">
             {String(row[config.groupBy] ?? "")}
           </p>
         )}
@@ -89,56 +89,52 @@ function DetailCard({
   const videos = toArray(row["影片"]);
 
   return (
-    <Card className="p-6">
-      <dl className="grid gap-4 sm:grid-cols-2">
-        {config.fields.map((f) => {
-          const v = row[f.key];
-          const videos = f.videoKey ? parseVideos(row[f.videoKey]) : [];
-          const hasValue = !(v === undefined || v === "" || (Array.isArray(v) && v.length === 0));
-          if (!hasValue && videos.length === 0) return null;
-          return (
-            <div key={f.key} className={f.long || videos.length > 0 ? "sm:col-span-2" : ""}>
-              <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {f.label}
-              </dt>
-              {hasValue && (
-                <dd className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">
-                  {Array.isArray(v) ? (
-                    <div className="flex flex-wrap gap-1">
-                      {v.map((x) => (
-                        <Badge key={x} variant="secondary" className="text-xs font-normal">
-                          {x}
-                        </Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    String(v)
-                  )}
-                </dd>
-              )}
-              {videos.length > 0 && <YouTubeVideoList videos={videos} />}
-            </div>
-          );
-        })}
-      </dl>
+    <Card className="divide-y divide-border p-0">
+      {config.fields.map((f) => {
+        const v = row[f.key];
+        const fieldVideos = f.videoKey ? parseVideos(row[f.videoKey]) : [];
+        const hasValue = !(v === undefined || v === "" || (Array.isArray(v) && v.length === 0));
+        if (!hasValue && fieldVideos.length === 0) return null;
+        return (
+          <section key={f.key} className="px-6 py-5">
+            <h2 className="text-xl font-semibold tracking-tight">{f.label}</h2>
+            {hasValue && (
+              <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+                {Array.isArray(v) ? (
+                  <div className="flex flex-wrap gap-1">
+                    {v.map((x) => (
+                      <Badge key={x} variant="secondary" className="text-xs font-normal">
+                        {x}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  String(v)
+                )}
+              </div>
+            )}
+            {fieldVideos.length > 0 && <YouTubeVideoList videos={fieldVideos} />}
+          </section>
+        );
+      })}
 
       {photos.length > 0 && (
-        <div className="mt-6">
-          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">相片</div>
-          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+        <section className="px-6 py-5">
+          <h2 className="text-xl font-semibold tracking-tight">相片</h2>
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {photos.map((url) => (
               <a key={url} href={url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded border">
                 <img src={url} alt="" loading="lazy" className="h-32 w-full object-cover" />
               </a>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {videos.length > 0 && (
-        <div className="mt-6">
-          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">影片</div>
-          <ul className="mt-2 space-y-1 text-sm">
+        <section className="px-6 py-5">
+          <h2 className="text-xl font-semibold tracking-tight">影片</h2>
+          <ul className="mt-3 space-y-1 text-sm">
             {videos.map((url) => (
               <li key={url}>
                 <a href={url} target="_blank" rel="noreferrer" className="text-accent hover:underline">
@@ -147,7 +143,7 @@ function DetailCard({
               </li>
             ))}
           </ul>
-        </div>
+        </section>
       )}
     </Card>
   );
