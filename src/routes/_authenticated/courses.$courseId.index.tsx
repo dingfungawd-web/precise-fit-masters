@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courses";
 import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
 
-export const Route = createFileRoute("/_authenticated/courses/$courseId")({
+export const Route = createFileRoute("/_authenticated/courses/$courseId/")({
   component: CoursePage,
 });
 
