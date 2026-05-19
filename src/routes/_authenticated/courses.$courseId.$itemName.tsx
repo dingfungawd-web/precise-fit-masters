@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courses";
 import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
 import { COURSE_CONFIG } from "@/lib/course-config";
+import { parseVideos, YouTubeVideoList } from "@/components/youtube-videos";
 
 export const Route = createFileRoute("/_authenticated/courses/$courseId/$itemName")({
   component: ItemDetailPage,
@@ -92,25 +93,30 @@ function DetailCard({
       <dl className="grid gap-4 sm:grid-cols-2">
         {config.fields.map((f) => {
           const v = row[f.key];
-          if (v === undefined || v === "" || (Array.isArray(v) && v.length === 0)) return null;
+          const videos = f.videoKey ? parseVideos(row[f.videoKey]) : [];
+          const hasValue = !(v === undefined || v === "" || (Array.isArray(v) && v.length === 0));
+          if (!hasValue && videos.length === 0) return null;
           return (
-            <div key={f.key} className={f.long ? "sm:col-span-2" : ""}>
+            <div key={f.key} className={f.long || videos.length > 0 ? "sm:col-span-2" : ""}>
               <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {f.label}
               </dt>
-              <dd className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">
-                {Array.isArray(v) ? (
-                  <div className="flex flex-wrap gap-1">
-                    {v.map((x) => (
-                      <Badge key={x} variant="secondary" className="text-xs font-normal">
-                        {x}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  String(v)
-                )}
-              </dd>
+              {hasValue && (
+                <dd className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">
+                  {Array.isArray(v) ? (
+                    <div className="flex flex-wrap gap-1">
+                      {v.map((x) => (
+                        <Badge key={x} variant="secondary" className="text-xs font-normal">
+                          {x}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    String(v)
+                  )}
+                </dd>
+              )}
+              {videos.length > 0 && <YouTubeVideoList videos={videos} />}
             </div>
           );
         })}
