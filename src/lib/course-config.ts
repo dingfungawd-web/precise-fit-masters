@@ -1,10 +1,17 @@
+export type CourseField = {
+  key: string;
+  label: string;
+  long?: boolean;
+  videoKey?: string;
+};
+
 export const COURSE_CONFIG: Record<
   string,
   {
     description: string;
     groupBy: string;
     titleField: string;
-    fields: { key: string; label: string; long?: boolean }[];
+    fields: CourseField[];
   }
 > = {
   "1": {
