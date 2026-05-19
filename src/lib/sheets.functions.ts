@@ -14,6 +14,11 @@ const COURSE_TO_SHEET: Record<string, SheetName> = {
   "3": "課程三產品款式及測量方法",
 };
 
+type CacheEntry = { at: number; data: { sheetName: SheetName; rows: SheetRow[] } };
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const g = globalThis as unknown as { __sheetCache?: Map<string, CacheEntry> };
+const cache: Map<string, CacheEntry> = g.__sheetCache ?? (g.__sheetCache = new Map());
+
 export const getCourseSheet = createServerFn({ method: "GET" })
   .inputValidator((input: { courseId: string }) => {
     if (!COURSE_TO_SHEET[input.courseId]) {
@@ -22,13 +27,17 @@ export const getCourseSheet = createServerFn({ method: "GET" })
     return input;
   })
   .handler(async ({ data }) => {
+    const cached = cache.get(data.courseId);
+    if (cached && Date.now() - cached.at < CACHE_TTL_MS) {
+      return cached.data;
+    }
+
     const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY 未設定");
     const GOOGLE_SHEETS_API_KEY = process.env.GOOGLE_SHEETS_API_KEY;
     if (!GOOGLE_SHEETS_API_KEY) throw new Error("Google Sheets 連接未設定");
 
     const sheetName = COURSE_TO_SHEET[data.courseId];
-    // Wrap sheet name in single quotes for A1 notation (handles CJK / special chars)
     const range = `'${sheetName}'!A1:Z1000`;
     const url = `${GATEWAY_URL}/spreadsheets/${SPREADSHEET_ID}/values/${range}`;
 
@@ -40,12 +49,18 @@ export const getCourseSheet = createServerFn({ method: "GET" })
     });
     const bodyText = await res.text();
     if (!res.ok) {
+      // On rate limit, serve stale cache if available
+      if (res.status === 429 && cached) return cached.data;
       throw new Error(`Google Sheets API ${res.status}: ${bodyText.slice(0, 300)}`);
     }
 
     const json = JSON.parse(bodyText) as { values?: string[][] };
     const values = json.values ?? [];
-    if (values.length < 2) return { sheetName, rows: [] as SheetRow[] };
+    if (values.length < 2) {
+      const empty = { sheetName, rows: [] as SheetRow[] };
+      cache.set(data.courseId, { at: Date.now(), data: empty });
+      return empty;
+    }
 
     const headers = values[0].map((h) => h.trim()).filter(Boolean);
     const rows: SheetRow[] = [];
@@ -61,5 +76,7 @@ export const getCourseSheet = createServerFn({ method: "GET" })
       if (hasContent) rows.push(row);
     }
 
-    return { sheetName, rows };
+    const result = { sheetName, rows };
+    cache.set(data.courseId, { at: Date.now(), data: result });
+    return result;
   });
