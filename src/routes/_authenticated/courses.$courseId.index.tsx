@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courses";
 import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
 import { COURSE_CONFIG } from "@/lib/course-config";
+import { buildCourseSubtitle } from "@/lib/course-subtitle";
 
 export const Route = createFileRoute("/_authenticated/courses/$courseId/")({
   component: CoursePage,
@@ -52,7 +53,9 @@ function CoursePage() {
           )}
         </div>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">{course.title}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{course.subtitle}</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {buildCourseSubtitle(courseId, data?.rows, course.subtitle)}
+        </p>
       </div>
 
       {course.status === "placeholder" && (
