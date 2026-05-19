@@ -24,6 +24,12 @@ function CoursePage() {
     queryKey: ["course-sheet", courseId],
     queryFn: () => fetchSheet({ data: { courseId } }),
     enabled: !!config,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    retry: (count, err) => {
+      if ((err as Error)?.message?.includes("429")) return false;
+      return count < 2;
+    },
   });
 
   return (
