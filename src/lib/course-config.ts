@@ -22,7 +22,7 @@ export const COURSE_CONFIG: Record<
       { key: "常用樓宇", label: "常用樓宇" },
       { key: "細分", label: "細分" },
       { key: "結構", label: "結構", long: true },
-      { key: "基本度尺", label: "基本度尺", long: true },
+      { key: "門窗影片庫", label: "門窗影片庫", long: true, videoKey: "門窗影片庫_影片" },
       { key: "常見伏位", label: "常見伏位", long: true },
     ],
   },
