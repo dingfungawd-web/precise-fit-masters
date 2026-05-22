@@ -50,9 +50,10 @@ export const COURSE_CONFIG: Record<
       { key: "款式常見做法", label: "款式常見做法", long: true },
       { key: "款式特別做法", label: "款式特別做法", long: true },
       { key: "款式度尺口訣", label: "款式度尺口訣", long: true },
-      { key: "基本度尺方法", label: "基本度尺方法", long: true, videoKey: "基本度尺方法_影片" },
-      { key: "進階度尺方法", label: "進階度尺方法", long: true, videoKey: "進階度尺方法_影片" },
+      { key: "基本度尺方法", label: "基本度尺方法", long: true },
+      { key: "進階度尺方法", label: "進階度尺方法", long: true },
       { key: "錯誤案例庫", label: "錯誤案例庫", long: true, videoKey: "錯誤案例庫_影片" },
+      { key: "產品影片庫", label: "產品影片庫", long: true, videoKey: "產品影片庫_影片" },
     ],
   },
 };
