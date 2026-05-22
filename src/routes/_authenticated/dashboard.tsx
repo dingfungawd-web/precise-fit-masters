@@ -1,14 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
-import { useQueries } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
 import { COURSES } from "@/lib/courses";
 import { useAuth } from "@/lib/auth-context";
-import { getCourseSheet } from "@/lib/sheets.functions";
-import { COURSE_CONFIG } from "@/lib/course-config";
-import { buildCourseSubtitle } from "@/lib/course-subtitle";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -16,24 +11,6 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function Dashboard() {
   const { user } = useAuth();
-  const fetchSheet = useServerFn(getCourseSheet);
-
-  const readyCourses = COURSES.filter((c) => c.status === "ready" && COURSE_CONFIG[c.id]);
-  const results = useQueries({
-    queries: readyCourses.map((c) => ({
-      queryKey: ["course-sheet", c.id],
-      queryFn: () => fetchSheet({ data: { courseId: c.id } }),
-      staleTime: 5 * 60 * 1000,
-      gcTime: 10 * 60 * 1000,
-      retry: (count: number, err: unknown) => {
-        if ((err as Error)?.message?.includes("429")) return false;
-        return count < 2;
-      },
-    })),
-  });
-  const rowsById = new Map<string, Awaited<ReturnType<typeof fetchSheet>>["rows"] | undefined>();
-  readyCourses.forEach((c, i) => rowsById.set(c.id, results[i].data?.rows));
-
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
       <div className="mb-8">
@@ -47,34 +24,31 @@ function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {COURSES.map((c) => {
-          const subtitle = buildCourseSubtitle(c.id, rowsById.get(c.id), c.subtitle);
-          return (
-            <Link
-              key={c.id}
-              to="/courses/$courseId"
-              params={{ courseId: c.id }}
-              className="group"
-            >
-              <Card className="flex h-full flex-col p-6 transition-all hover:border-accent hover:shadow-md">
-                <div className="flex items-start justify-between">
-                  <span className="text-xs font-medium text-accent">{c.number}</span>
-                  {c.status === "placeholder" && (
-                    <Badge variant="secondary" className="text-xs">待定</Badge>
-                  )}
-                  {c.status === "manual" && (
-                    <Badge variant="outline" className="text-xs">系統內建</Badge>
-                  )}
-                </div>
-                <h2 className="mt-2 text-lg font-semibold">{c.title}</h2>
-                <p className="mt-2 flex-1 text-sm text-muted-foreground">{subtitle}</p>
-                <div className="mt-4 flex items-center text-sm font-medium text-foreground/80 group-hover:text-accent">
-                  進入課程 <ArrowRight className="ml-1 h-4 w-4" />
-                </div>
-              </Card>
-            </Link>
-          );
-        })}
+        {COURSES.map((c) => (
+          <Link
+            key={c.id}
+            to="/courses/$courseId"
+            params={{ courseId: c.id }}
+            className="group"
+          >
+            <Card className="flex h-full flex-col p-6 transition-all hover:border-accent hover:shadow-md">
+              <div className="flex items-start justify-between">
+                <span className="text-xs font-medium text-accent">{c.number}</span>
+                {c.status === "placeholder" && (
+                  <Badge variant="secondary" className="text-xs">待定</Badge>
+                )}
+                {c.status === "manual" && (
+                  <Badge variant="outline" className="text-xs">系統內建</Badge>
+                )}
+              </div>
+              <h2 className="mt-2 text-lg font-semibold">{c.title}</h2>
+              <p className="mt-2 flex-1 text-sm text-muted-foreground">{c.subtitle}</p>
+              <div className="mt-4 flex items-center text-sm font-medium text-foreground/80 group-hover:text-accent">
+                進入課程 <ArrowRight className="ml-1 h-4 w-4" />
+              </div>
+            </Card>
+          </Link>
+        ))}
       </div>
     </main>
   );
