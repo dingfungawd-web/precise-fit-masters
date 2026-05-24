@@ -68,6 +68,9 @@ function CoursePage() {
         </Card>
       )}
 
+      {courseId === "4" && <Course4DecisionTool />}
+
+
       {config && (
         <div className="space-y-6">
           <Card className="p-6">
