@@ -35,9 +35,9 @@ export const COURSES: CourseMeta[] = [
   {
     id: "4",
     number: "課程四",
-    title: "（待定）",
-    subtitle: "內容稍後提供",
-    status: "placeholder",
+    title: "款式決策助手",
+    subtitle: "流程決策樹形圖：根據場景快速建議款式及做法",
+    status: "ready",
     source: "Google Sheets",
   },
   {
