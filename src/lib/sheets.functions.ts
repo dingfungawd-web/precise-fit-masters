@@ -3,7 +3,11 @@ import { createServerFn } from "@tanstack/react-start";
 export type SheetCellValue = string | number | boolean | string[];
 export type SheetRow = { [key: string]: SheetCellValue };
 
-export type SheetName = "課程一門窗類型" | "課程二鋁通料" | "課程三產品款式及測量方法";
+export type SheetName =
+  | "課程一門窗類型"
+  | "課程二鋁通料"
+  | "課程三產品款式及測量方法"
+  | "課程四流程決策樹形圖";
 
 const SPREADSHEET_ID = "1Q2ONIMw8DzSlwbUWKNFQ_L4g79U_jd-iUAHyHMTGR3I";
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_sheets/v4";
@@ -12,6 +16,7 @@ const COURSE_TO_SHEET: Record<string, SheetName> = {
   "1": "課程一門窗類型",
   "2": "課程二鋁通料",
   "3": "課程三產品款式及測量方法",
+  "4": "課程四流程決策樹形圖",
 };
 
 type CacheEntry = { at: number; data: { sheetName: SheetName; rows: SheetRow[] } };

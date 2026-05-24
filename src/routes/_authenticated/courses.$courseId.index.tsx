@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courses";
 import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
 import { COURSE_CONFIG } from "@/lib/course-config";
+import { Course4DecisionTool } from "@/components/course4-decision-tool";
 
 export const Route = createFileRoute("/_authenticated/courses/$courseId/")({
   component: CoursePage,
@@ -66,6 +67,9 @@ function CoursePage() {
           此課程內容不經 Google Sheets，會由系統內建。詳情待定。
         </Card>
       )}
+
+      {courseId === "4" && <Course4DecisionTool />}
+
 
       {config && (
         <div className="space-y-6">
