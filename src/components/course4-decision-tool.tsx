@@ -358,17 +358,17 @@ function TreeNode({
     <div className={`rounded-md border-l-2 ${colors[depth] ?? "border-l-muted"} pl-3`}>
       <button
         type="button"
-        onClick={() => hasChildren && setOpen((v) => !v)}
-        className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-accent/10 ${
-          isLeaf ? "cursor-default" : ""
-        }`}
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-accent/10"
       >
-        {hasChildren && (
-          <ChevronRight className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-90" : ""}`} />
-        )}
-        {!hasChildren && <span className="h-3.5 w-3.5 shrink-0" />}
+        <ChevronRight className={`h-3.5 w-3.5 shrink-0 transition-transform ${open ? "rotate-90" : ""}`} />
         <span className={depth === 3 ? "font-semibold text-accent" : "font-medium"}>{node.label}</span>
         <span className="text-xs text-muted-foreground">（{node.rules.length}）</span>
+        {isLeaf && (
+          <span className="ml-auto text-[10px] font-medium uppercase tracking-wide text-accent">
+            {open ? "收起做法" : "查看做法"}
+          </span>
+        )}
       </button>
       {open && hasChildren && (
         <div className="ml-2 mt-1 space-y-1">
