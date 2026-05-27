@@ -377,9 +377,11 @@ function TreeNode({
           ))}
         </div>
       )}
-      {open && isLeaf && node.rules[0] && (
-        <div className="ml-2 my-2">
-          <LeafRule rule={node.rules[0]} />
+      {open && isLeaf && (
+        <div className="ml-2 my-2 space-y-2">
+          {node.rules.map((r, i) => (
+            <LeafRule key={i} rule={r} />
+          ))}
         </div>
       )}
     </div>
