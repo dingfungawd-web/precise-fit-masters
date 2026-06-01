@@ -353,13 +353,11 @@ function DecisionTree({ rules }: { rules: Rule[] }) {
 
   for (const r of rules) {
     const uses = r.用途.length ? r.用途 : ["（未指定用途）"];
-    const estates = r.屋苑類型.length ? r.屋苑類型 : ["（未指定屋苑）"];
     const types = r.門窗種類.length ? r.門窗種類 : ["（未指定門窗）"];
     const scenes = r.現場情況.length ? r.現場情況 : ["（一般情況）"];
     for (const u of uses)
-      for (const e of estates)
-        for (const t of types)
-          for (const s of scenes) insert(root, [u, e, t, r.款式名稱, s], r);
+      for (const t of types)
+        for (const s of scenes) insert(root, [u, t, r.款式名稱, s], r);
   }
 
   return (
