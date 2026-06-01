@@ -499,11 +499,6 @@ function StyleIndex({ rules }: { rules: Rule[] }) {
                       用途：{v}
                     </Badge>
                   ))}
-                  {r.屋苑類型.map((v) => (
-                    <Badge key={`e-${v}`} variant="outline" className="border-emerald-400/40">
-                      屋苑：{v}
-                    </Badge>
-                  ))}
                   {r.門窗種類.map((v) => (
                     <Badge key={`t-${v}`} variant="outline" className="border-amber-400/40">
                       門窗：{v}
