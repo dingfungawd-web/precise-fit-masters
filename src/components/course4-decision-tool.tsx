@@ -198,7 +198,7 @@ function DecisionAssistant({ rules }: { rules: Rule[] }) {
   return (
     <div className="space-y-4">
       {/* progress / breadcrumb */}
-      <Card className="p-4">
+      <Card className="p-4 space-y-3">
         <div className="flex flex-wrap items-center gap-2 text-xs">
           {STEPS.map((s, i) => {
             const v = answers[s];
@@ -221,17 +221,17 @@ function DecisionAssistant({ rules }: { rules: Rule[] }) {
               </div>
             );
           })}
-          {(Object.keys(answers).length > 0) && (
-            <div className="ml-auto flex items-center gap-1">
-              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={goBack}>
-                <ArrowLeft className="mr-1 h-3 w-3" /> 上一步
-              </Button>
-              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={reset}>
-                <RotateCcw className="mr-1 h-3 w-3" /> 重新開始
-              </Button>
-            </div>
-          )}
         </div>
+        {(Object.keys(answers).length > 0) && (
+          <div className="flex items-center gap-2 border-t pt-3">
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={goBack}>
+              <ArrowLeft className="mr-1 h-3 w-3" /> 上一步
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={reset}>
+              <RotateCcw className="mr-1 h-3 w-3" /> 重新開始
+            </Button>
+          </div>
+        )}
       </Card>
 
       {/* current question */}
