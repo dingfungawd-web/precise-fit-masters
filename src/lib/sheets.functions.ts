@@ -20,7 +20,7 @@ const COURSE_TO_SHEET: Record<string, SheetName> = {
 };
 
 type CacheEntry = { at: number; data: { sheetName: SheetName; rows: SheetRow[] } };
-const CACHE_TTL_MS = 5 * 60 * 1000;
+const CACHE_TTL_MS = 30 * 1000;
 const g = globalThis as unknown as { __sheetCache?: Map<string, CacheEntry> };
 const cache: Map<string, CacheEntry> = g.__sheetCache ?? (g.__sheetCache = new Map());
 
