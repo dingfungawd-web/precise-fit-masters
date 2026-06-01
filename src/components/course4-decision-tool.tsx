@@ -175,6 +175,17 @@ function DecisionAssistant({ rules }: { rules: Rule[] }) {
 
   const reset = () => setAnswers({});
 
+  const goBack = () => {
+    const lastAnsweredIdx = STEPS.map((s) => answers[s]).findLastIndex((v) => v !== undefined);
+    if (lastAnsweredIdx === -1) return;
+    const next: Partial<Record<StepKey, string>> = {};
+    for (let i = 0; i < lastAnsweredIdx; i++) {
+      const s = STEPS[i];
+      if (answers[s]) next[s] = answers[s];
+    }
+    setAnswers(next);
+  };
+
   const currentStepIdx = STEPS.findIndex((s) => !answers[s]);
   const allAnswered = currentStepIdx === -1;
 
