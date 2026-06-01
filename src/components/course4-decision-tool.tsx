@@ -57,7 +57,7 @@ export function Course4DecisionTool() {
     retry: (count, err) => (((err as Error)?.message?.includes("429")) ? false : count < 2),
   });
 
-  const rules: Rule[] = useMemo(() => (data?.rows ?? []).map(toRule).filter((r) => r.款式名稱), [data]);
+  const rules: Rule[] = useMemo(() => (data?.rows ?? []).flatMap(toRules).filter((r) => r.款式名稱), [data]);
 
   if (isLoading) {
     return (
