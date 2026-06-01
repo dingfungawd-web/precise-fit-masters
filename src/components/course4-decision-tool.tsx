@@ -34,7 +34,6 @@ function splitMulti(v: unknown): string[] {
 function toRules(row: SheetRow): Rule[] {
   const base = {
     用途: splitMulti(row["用途"]),
-    屋苑類型: splitMulti(row["屋苑類型"]),
     門窗種類: splitMulti(row["門窗種類"]),
     現場情況: splitMulti(row["現場情況"]),
     建議做法: String(row["建議做法"] ?? "").trim(),
