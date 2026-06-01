@@ -10,12 +10,11 @@ import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
 import { parseVideos, YouTubeVideoList } from "@/components/youtube-videos";
 
 // Expected columns in Google Sheet "課程四流程決策樹形圖":
-// 用途 | 屋苑類型 | 門窗種類 | 款式名稱 | 現場情況 | 建議做法 | 注意事項 | 影片連結
+// 用途 | 門窗種類 | 款式名稱 | 現場情況 | 建議做法 | 注意事項 | 影片連結
 // Multi-value cells separated by "|" (e.g. 用途 = "防蚊|居家防護")
 
 type Rule = {
   用途: string[];
-  屋苑類型: string[];
   門窗種類: string[];
   款式名稱: string;
   現場情況: string[];
@@ -24,7 +23,7 @@ type Rule = {
   影片連結: string;
 };
 
-const STEPS = ["用途", "屋苑類型", "門窗種類", "款式名稱", "現場情況"] as const;
+const STEPS = ["用途", "門窗種類", "款式名稱", "現場情況"] as const;
 type StepKey = (typeof STEPS)[number];
 
 function splitMulti(v: unknown): string[] {
@@ -35,7 +34,6 @@ function splitMulti(v: unknown): string[] {
 function toRules(row: SheetRow): Rule[] {
   const base = {
     用途: splitMulti(row["用途"]),
-    屋苑類型: splitMulti(row["屋苑類型"]),
     門窗種類: splitMulti(row["門窗種類"]),
     現場情況: splitMulti(row["現場情況"]),
     建議做法: String(row["建議做法"] ?? "").trim(),
@@ -355,13 +353,11 @@ function DecisionTree({ rules }: { rules: Rule[] }) {
 
   for (const r of rules) {
     const uses = r.用途.length ? r.用途 : ["（未指定用途）"];
-    const estates = r.屋苑類型.length ? r.屋苑類型 : ["（未指定屋苑）"];
     const types = r.門窗種類.length ? r.門窗種類 : ["（未指定門窗）"];
     const scenes = r.現場情況.length ? r.現場情況 : ["（一般情況）"];
     for (const u of uses)
-      for (const e of estates)
-        for (const t of types)
-          for (const s of scenes) insert(root, [u, e, t, r.款式名稱, s], r);
+      for (const t of types)
+        for (const s of scenes) insert(root, [u, t, r.款式名稱, s], r);
   }
 
   return (
@@ -501,11 +497,6 @@ function StyleIndex({ rules }: { rules: Rule[] }) {
                   {r.用途.map((v) => (
                     <Badge key={`u-${v}`} variant="outline" className="border-blue-400/40">
                       用途：{v}
-                    </Badge>
-                  ))}
-                  {r.屋苑類型.map((v) => (
-                    <Badge key={`e-${v}`} variant="outline" className="border-emerald-400/40">
-                      屋苑：{v}
                     </Badge>
                   ))}
                   {r.門窗種類.map((v) => (
