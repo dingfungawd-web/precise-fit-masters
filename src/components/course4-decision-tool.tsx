@@ -95,6 +95,24 @@ export function Course4DecisionTool() {
 
   return (
     <Tabs defaultValue="assistant" className="w-full">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">
+          已載入 {rules.length} 條規則。喺 Google Sheets 改完後請按右邊「重新整理」即時更新。
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs"
+          onClick={() => {
+            queryClient.invalidateQueries({ queryKey: ["course-sheet", "4"] });
+            refetch();
+          }}
+          disabled={isFetching}
+        >
+          <RefreshCw className={`mr-1 h-3 w-3 ${isFetching ? "animate-spin" : ""}`} />
+          重新整理
+        </Button>
+      </div>
       <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="assistant">互動決策助手</TabsTrigger>
         <TabsTrigger value="tree">視覺化決策樹</TabsTrigger>
