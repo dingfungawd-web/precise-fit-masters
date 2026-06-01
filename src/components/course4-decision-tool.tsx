@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Loader2, RotateCcw, ChevronRight, Lightbulb, AlertTriangle, RefreshCw } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, RotateCcw, ChevronRight, Lightbulb, AlertTriangle, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -175,6 +175,23 @@ function DecisionAssistant({ rules }: { rules: Rule[] }) {
 
   const reset = () => setAnswers({});
 
+  const goBack = () => {
+    let lastAnsweredIdx = -1;
+    for (let i = STEPS.length - 1; i >= 0; i--) {
+      if (answers[STEPS[i]]) {
+        lastAnsweredIdx = i;
+        break;
+      }
+    }
+    if (lastAnsweredIdx === -1) return;
+    const next: Partial<Record<StepKey, string>> = {};
+    for (let i = 0; i < lastAnsweredIdx; i++) {
+      const s = STEPS[i];
+      if (answers[s]) next[s] = answers[s];
+    }
+    setAnswers(next);
+  };
+
   const currentStepIdx = STEPS.findIndex((s) => !answers[s]);
   const allAnswered = currentStepIdx === -1;
 
@@ -205,9 +222,14 @@ function DecisionAssistant({ rules }: { rules: Rule[] }) {
             );
           })}
           {(Object.keys(answers).length > 0) && (
-            <Button variant="ghost" size="sm" className="ml-auto h-7 text-xs" onClick={reset}>
-              <RotateCcw className="mr-1 h-3 w-3" /> 重新開始
-            </Button>
+            <div className="ml-auto flex items-center gap-1">
+              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={goBack}>
+                <ArrowLeft className="mr-1 h-3 w-3" /> 上一步
+              </Button>
+              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={reset}>
+                <RotateCcw className="mr-1 h-3 w-3" /> 重新開始
+              </Button>
+            </div>
           )}
         </div>
       </Card>
