@@ -10,12 +10,11 @@ import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
 import { parseVideos, YouTubeVideoList } from "@/components/youtube-videos";
 
 // Expected columns in Google Sheet "課程四流程決策樹形圖":
-// 用途 | 屋苑類型 | 門窗種類 | 款式名稱 | 現場情況 | 建議做法 | 注意事項 | 影片連結
+// 用途 | 門窗種類 | 款式名稱 | 現場情況 | 建議做法 | 注意事項 | 影片連結
 // Multi-value cells separated by "|" (e.g. 用途 = "防蚊|居家防護")
 
 type Rule = {
   用途: string[];
-  屋苑類型: string[];
   門窗種類: string[];
   款式名稱: string;
   現場情況: string[];
@@ -24,7 +23,7 @@ type Rule = {
   影片連結: string;
 };
 
-const STEPS = ["用途", "屋苑類型", "門窗種類", "款式名稱", "現場情況"] as const;
+const STEPS = ["用途", "門窗種類", "款式名稱", "現場情況"] as const;
 type StepKey = (typeof STEPS)[number];
 
 function splitMulti(v: unknown): string[] {
