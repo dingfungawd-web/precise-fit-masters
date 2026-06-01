@@ -32,17 +32,18 @@ function splitMulti(v: unknown): string[] {
   return v.split(/[|｜,，;；\n]/).map((s) => s.trim()).filter(Boolean);
 }
 
-function toRule(row: SheetRow): Rule {
-  return {
+function toRules(row: SheetRow): Rule[] {
+  const base = {
     用途: splitMulti(row["用途"]),
     屋苑類型: splitMulti(row["屋苑類型"]),
     門窗種類: splitMulti(row["門窗種類"]),
-    款式名稱: String(row["款式名稱"] ?? "").trim(),
     現場情況: splitMulti(row["現場情況"]),
     建議做法: String(row["建議做法"] ?? "").trim(),
     注意事項: String(row["注意事項"] ?? "").trim(),
     影片連結: String(row["影片連結"] ?? "").trim(),
   };
+  const names = splitMulti(row["款式名稱"]);
+  return names.map((n) => ({ ...base, 款式名稱: n }));
 }
 
 export function Course4DecisionTool() {
