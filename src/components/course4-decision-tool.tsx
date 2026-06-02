@@ -338,7 +338,7 @@ function ResultCard({ rule }: { rule: Rule }) {
 /* -------------------- 視覺化決策樹 -------------------- */
 
 function DecisionTree({ rules }: { rules: Rule[] }) {
-  // Hierarchical: 用途 → 屋苑類型 → 門窗種類 → 款式名稱 → 現場情況 (rule)
+  // Hierarchical: 用途 → 門/窗 → 門窗種類 → 款式名稱 → 現場情況 (rule)
   type Node = { label: string; rules: Rule[]; children: Map<string, Node> };
   const root: Node = { label: "全部", rules, children: new Map() };
 
@@ -355,11 +355,13 @@ function DecisionTree({ rules }: { rules: Rule[] }) {
 
   for (const r of rules) {
     const uses = r.用途.length ? r.用途 : ["（未指定用途）"];
+    const dw = r["門/窗"].length ? r["門/窗"] : ["（未指定門/窗）"];
     const types = r.門窗種類.length ? r.門窗種類 : ["（未指定門窗）"];
     const scenes = r.現場情況.length ? r.現場情況 : ["（一般情況）"];
     for (const u of uses)
-      for (const t of types)
-        for (const s of scenes) insert(root, [u, t, r.款式名稱, s], r);
+      for (const d of dw)
+        for (const t of types)
+          for (const s of scenes) insert(root, [u, d, t, r.款式名稱, s], r);
   }
 
   return (
