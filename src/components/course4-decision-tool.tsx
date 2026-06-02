@@ -10,11 +10,10 @@ import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
 import { parseVideos, YouTubeVideoList } from "@/components/youtube-videos";
 
 // Expected columns in Google Sheet "課程四流程決策樹形圖":
-// 用途 | 門窗種類 | 款式名稱 | 現場情況 | 建議做法 | 注意事項 | 影片連結
-// Multi-value cells separated by "|" (e.g. 用途 = "防蚊|居家防護")
+// 門/窗 | 門窗種類 | 款式名稱 | 現場情況 | 建議做法 | 注意事項 | 影片連結
+// Multi-value cells separated by "|" (e.g. 門窗種類 = "推拉窗|平開窗")
 
 type Rule = {
-  用途: string[];
   "門/窗": string[];
   門窗種類: string[];
   款式名稱: string;
@@ -24,7 +23,7 @@ type Rule = {
   影片連結: string;
 };
 
-const STEPS = ["門/窗", "門窗種類", "款式名稱", "用途", "現場情況"] as const;
+const STEPS = ["門/窗", "門窗種類", "款式名稱", "現場情況"] as const;
 type StepKey = (typeof STEPS)[number];
 
 function splitMulti(v: unknown): string[] {
@@ -34,7 +33,6 @@ function splitMulti(v: unknown): string[] {
 
 function toRules(row: SheetRow): Rule[] {
   const base = {
-    用途: splitMulti(row["用途"]),
     "門/窗": splitMulti(row["門/窗"]),
     門窗種類: splitMulti(row["門窗種類"]),
     現場情況: splitMulti(row["現場情況"]),
@@ -84,10 +82,10 @@ export function Course4DecisionTool() {
           請喺 Google Sheets 分頁「課程四流程決策樹形圖」加入以下欄位（第一行為標題），每一行 = 一條規則：
         </p>
         <div className="mt-3 overflow-x-auto rounded-md border bg-muted/30 p-3 text-xs font-mono">
-          門/窗 | 門窗種類 | 款式名稱 | 用途 | 現場情況 | 建議做法 | 注意事項 | 影片連結
+          門/窗 | 門窗種類 | 款式名稱 | 現場情況 | 建議做法 | 注意事項 | 影片連結
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          備註：「用途」「門/窗」「門窗種類」「現場情況」「款式名稱」可以一格填多個值，用「|」分隔（例如：防蚊|居家防護）。
+          備註：「門/窗」「門窗種類」「現場情況」「款式名稱」可以一格填多個值，用「|」分隔（例如：推拉窗|平開窗）。
           「影片連結」可貼 YouTube 連結，多條請每行一條。
         </p>
       </Card>
@@ -338,7 +336,7 @@ function ResultCard({ rule }: { rule: Rule }) {
 /* -------------------- 視覺化決策樹 -------------------- */
 
 function DecisionTree({ rules }: { rules: Rule[] }) {
-  // Hierarchical: 用途 → 門/窗 → 門窗種類 → 款式名稱 → 現場情況 (rule)
+  // Hierarchical: 門/窗 → 門窗種類 → 款式名稱 → 現場情況 (rule)
   type Node = { label: string; rules: Rule[]; children: Map<string, Node> };
   const root: Node = { label: "全部", rules, children: new Map() };
 
@@ -354,14 +352,12 @@ function DecisionTree({ rules }: { rules: Rule[] }) {
   };
 
   for (const r of rules) {
-    const uses = r.用途.length ? r.用途 : ["（未指定用途）"];
     const dw = r["門/窗"].length ? r["門/窗"] : ["（未指定門/窗）"];
     const types = r.門窗種類.length ? r.門窗種類 : ["（未指定門窗）"];
     const scenes = r.現場情況.length ? r.現場情況 : ["（一般情況）"];
     for (const d of dw)
       for (const t of types)
-        for (const u of uses)
-          for (const s of scenes) insert(root, [d, t, r.款式名稱, u, s], r);
+        for (const s of scenes) insert(root, [d, t, r.款式名稱, s], r);
   }
 
   return (
@@ -393,7 +389,6 @@ function TreeNode({
     "border-l-emerald-400",
     "border-l-amber-400",
     "border-l-purple-400",
-    "border-l-pink-400",
   ];
 
   return (
@@ -404,7 +399,7 @@ function TreeNode({
         className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-accent/10"
       >
         <ChevronRight className={`h-3.5 w-3.5 shrink-0 transition-transform ${open ? "rotate-90" : ""}`} />
-        <span className={depth === 3 ? "font-semibold text-accent" : "font-medium"}>{node.label}</span>
+        <span className={depth === 2 ? "font-semibold text-accent" : "font-medium"}>{node.label}</span>
         <span className="text-xs text-muted-foreground">（{node.rules.length}）</span>
         {isLeaf && (
           <span className="ml-auto text-[10px] font-medium uppercase tracking-wide text-accent">
@@ -498,11 +493,6 @@ function StyleIndex({ rules }: { rules: Rule[] }) {
             {groups.get(selected)!.map((r, i) => (
               <Card key={i} className="p-4">
                 <div className="flex flex-wrap gap-1.5 text-xs">
-                  {r.用途.map((v) => (
-                    <Badge key={`u-${v}`} variant="outline" className="border-blue-400/40">
-                      用途：{v}
-                    </Badge>
-                  ))}
                   {r["門/窗"].map((v) => (
                     <Badge key={`dw-${v}`} variant="outline" className="border-emerald-400/40">
                       門/窗：{v}
