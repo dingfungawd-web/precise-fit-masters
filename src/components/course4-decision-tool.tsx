@@ -84,10 +84,10 @@ export function Course4DecisionTool() {
           請喺 Google Sheets 分頁「課程四流程決策樹形圖」加入以下欄位（第一行為標題），每一行 = 一條規則：
         </p>
         <div className="mt-3 overflow-x-auto rounded-md border bg-muted/30 p-3 text-xs font-mono">
-          用途 | 屋苑類型 | 門窗種類 | 款式名稱 | 現場情況 | 建議做法 | 注意事項 | 影片連結
+          用途 | 門/窗 | 門窗種類 | 款式名稱 | 現場情況 | 建議做法 | 注意事項 | 影片連結
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
-          備註：「用途」「屋苑類型」「門窗種類」「現場情況」可以一格填多個值，用「|」分隔（例如：防蚊|居家防護）。
+          備註：「用途」「門/窗」「門窗種類」「現場情況」「款式名稱」可以一格填多個值，用「|」分隔（例如：防蚊|居家防護）。
           「影片連結」可貼 YouTube 連結，多條請每行一條。
         </p>
       </Card>
