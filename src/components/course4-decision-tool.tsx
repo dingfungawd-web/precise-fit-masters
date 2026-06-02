@@ -24,7 +24,7 @@ type Rule = {
   影片連結: string;
 };
 
-const STEPS = ["用途", "門/窗", "門窗種類", "款式名稱", "現場情況"] as const;
+const STEPS = ["門/窗", "門窗種類", "款式名稱", "用途", "現場情況"] as const;
 type StepKey = (typeof STEPS)[number];
 
 function splitMulti(v: unknown): string[] {
@@ -84,7 +84,7 @@ export function Course4DecisionTool() {
           請喺 Google Sheets 分頁「課程四流程決策樹形圖」加入以下欄位（第一行為標題），每一行 = 一條規則：
         </p>
         <div className="mt-3 overflow-x-auto rounded-md border bg-muted/30 p-3 text-xs font-mono">
-          用途 | 門/窗 | 門窗種類 | 款式名稱 | 現場情況 | 建議做法 | 注意事項 | 影片連結
+          門/窗 | 門窗種類 | 款式名稱 | 用途 | 現場情況 | 建議做法 | 注意事項 | 影片連結
         </div>
         <p className="mt-3 text-xs text-muted-foreground">
           備註：「用途」「門/窗」「門窗種類」「現場情況」「款式名稱」可以一格填多個值，用「|」分隔（例如：防蚊|居家防護）。
@@ -358,10 +358,10 @@ function DecisionTree({ rules }: { rules: Rule[] }) {
     const dw = r["門/窗"].length ? r["門/窗"] : ["（未指定門/窗）"];
     const types = r.門窗種類.length ? r.門窗種類 : ["（未指定門窗）"];
     const scenes = r.現場情況.length ? r.現場情況 : ["（一般情況）"];
-    for (const u of uses)
-      for (const d of dw)
-        for (const t of types)
-          for (const s of scenes) insert(root, [u, d, t, r.款式名稱, s], r);
+    for (const d of dw)
+      for (const t of types)
+        for (const u of uses)
+          for (const s of scenes) insert(root, [d, t, r.款式名稱, u, s], r);
   }
 
   return (
