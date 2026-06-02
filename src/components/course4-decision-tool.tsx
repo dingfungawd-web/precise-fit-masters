@@ -15,6 +15,7 @@ import { parseVideos, YouTubeVideoList } from "@/components/youtube-videos";
 
 type Rule = {
   用途: string[];
+  "門/窗": string[];
   門窗種類: string[];
   款式名稱: string;
   現場情況: string[];
@@ -23,7 +24,7 @@ type Rule = {
   影片連結: string;
 };
 
-const STEPS = ["用途", "門窗種類", "款式名稱", "現場情況"] as const;
+const STEPS = ["用途", "門/窗", "門窗種類", "款式名稱", "現場情況"] as const;
 type StepKey = (typeof STEPS)[number];
 
 function splitMulti(v: unknown): string[] {
@@ -34,6 +35,7 @@ function splitMulti(v: unknown): string[] {
 function toRules(row: SheetRow): Rule[] {
   const base = {
     用途: splitMulti(row["用途"]),
+    "門/窗": splitMulti(row["門/窗"]),
     門窗種類: splitMulti(row["門窗種類"]),
     現場情況: splitMulti(row["現場情況"]),
     建議做法: String(row["建議做法"] ?? "").trim(),
