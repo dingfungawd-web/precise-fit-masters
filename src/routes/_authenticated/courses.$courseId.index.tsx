@@ -70,6 +70,9 @@ function CoursePage() {
       )}
 
       {courseId === "4" && <Course4DecisionTool />}
+      {courseId === "5" && <Course5GoldenCases />}
+
+
 
 
       {config && (
