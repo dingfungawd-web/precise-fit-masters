@@ -43,9 +43,9 @@ export const COURSES: CourseMeta[] = [
   {
     id: "5",
     number: "課程五",
-    title: "（待定）",
-    subtitle: "內容稍後提供",
-    status: "placeholder",
+    title: "黃金案例庫",
+    subtitle: "累積寶貴度尺實戰案例，按產品款式分類，快速吸收經驗",
+    status: "ready",
     source: "Google Sheets",
   },
   {
