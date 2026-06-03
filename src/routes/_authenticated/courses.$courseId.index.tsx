@@ -8,6 +8,7 @@ import { COURSES } from "@/lib/courses";
 import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
 import { COURSE_CONFIG } from "@/lib/course-config";
 import { Course4DecisionTool } from "@/components/course4-decision-tool";
+import { Course5GoldenCases } from "@/components/course5-golden-cases";
 
 export const Route = createFileRoute("/_authenticated/courses/$courseId/")({
   component: CoursePage,
