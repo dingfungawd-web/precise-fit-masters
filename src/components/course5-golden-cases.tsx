@@ -69,10 +69,17 @@ function extractDriveId(url: string): string | null {
   }
 }
 
-function driveToImage(url: string): string {
+function driveDisplayUrl(url: string): string {
   const id = extractDriveId(url);
   if (!id) return url;
-  return `https://lh3.googleusercontent.com/d/${id}=w1600`;
+  // =s0 = 原圖原尺寸
+  return `https://lh3.googleusercontent.com/d/${id}=s0`;
+}
+
+function driveOriginalLink(url: string): string {
+  const id = extractDriveId(url);
+  if (!id) return url;
+  return `https://drive.google.com/file/d/${id}/view`;
 }
 
 function isYouTube(url: string): boolean {
@@ -84,24 +91,19 @@ function isYouTube(url: string): boolean {
   }
 }
 
-type Media = { images: string[]; videos: ParsedVideo[] };
+type ImageEntry = { displayUrl: string; linkUrl: string; caption: string };
+type Media = { images: ImageEntry[]; videos: ParsedVideo[] };
 
 function parseMedia(raw: string): Media {
-  const images: string[] = [];
-  const videoLines: string[] = [];
-  const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  for (const line of lines) {
-    const sepIdx = line.indexOf("::");
-    const url = sepIdx !== -1 ? line.slice(sepIdx + 2).trim() : line;
-    if (isYouTube(url)) {
-      videoLines.push(line);
-    } else if (extractDriveId(url)) {
-      images.push(driveToImage(url));
-    } else if (/^https?:\/\//i.test(url)) {
-      images.push(url);
+  const videos = parseVideos(raw);
+  const imageItems = parseImageItems(raw);
+  const images: ImageEntry[] = imageItems.map((it: ParsedImageItem) => {
+    if (extractDriveId(it.url)) {
+      return { displayUrl: driveDisplayUrl(it.url), linkUrl: driveOriginalLink(it.url), caption: it.caption };
     }
-  }
-  return { images, videos: parseVideos(videoLines.join("\n")) };
+    return { displayUrl: it.url, linkUrl: it.url, caption: it.caption };
+  });
+  return { images, videos };
 }
 
 export function Course5GoldenCases() {
