@@ -91,19 +91,27 @@ function isYouTube(url: string): boolean {
   }
 }
 
-type ImageEntry = { displayUrl: string; linkUrl: string; caption: string };
-type Media = { images: ImageEntry[]; videos: ParsedVideo[] };
+type ImageEntry = { kind: "image"; displayUrl: string; linkUrl: string; caption: string };
+type VideoEntry = { kind: "video"; video: ParsedVideo };
+type MediaItem = ImageEntry | VideoEntry;
+type Media = { items: MediaItem[] };
 
 function parseMedia(raw: string): Media {
-  const videos = parseVideos(raw);
-  const imageItems = parseImageItems(raw);
-  const images: ImageEntry[] = imageItems.map((it: ParsedImageItem) => {
-    if (extractDriveId(it.url)) {
-      return { displayUrl: driveDisplayUrl(it.url), linkUrl: driveOriginalLink(it.url), caption: it.caption };
+  const items: MediaItem[] = [];
+  for (const it of splitItems(raw)) {
+    const yt = parseVideos(it.url + (it.lines.length ? "\n" + it.lines.join("\n") : ""));
+    if (yt.length > 0) {
+      items.push({ kind: "video", video: yt[0] });
+      continue;
     }
-    return { displayUrl: it.url, linkUrl: it.url, caption: it.caption };
-  });
-  return { images, videos };
+    const caption = it.lines.join("\n").trim();
+    if (extractDriveId(it.url)) {
+      items.push({ kind: "image", displayUrl: driveDisplayUrl(it.url), linkUrl: driveOriginalLink(it.url), caption });
+    } else {
+      items.push({ kind: "image", displayUrl: it.url, linkUrl: it.url, caption });
+    }
+  }
+  return { items };
 }
 
 export function Course5GoldenCases() {
