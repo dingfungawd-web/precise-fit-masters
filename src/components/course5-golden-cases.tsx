@@ -387,6 +387,7 @@ function CaseDetail({ c }: { c: Case }) {
           <Section
             title="預防要點"
             icon={<Lightbulb className="h-4 w-4 text-amber-500" />}
+            accent="warning"
           >
             <p className="whitespace-pre-wrap text-sm leading-relaxed">{c.預防要點}</p>
           </Section>
@@ -396,6 +397,7 @@ function CaseDetail({ c }: { c: Case }) {
           <Section
             title="安裝部執生處理"
             icon={<Wrench className="h-4 w-4 text-blue-600" />}
+            accent="info"
           >
             <p className="whitespace-pre-wrap text-sm leading-relaxed">{c.安裝部執生處理}</p>
           </Section>
@@ -451,7 +453,7 @@ function Section({
 }: {
   title: string;
   icon?: React.ReactNode;
-  accent?: "destructive" | "success";
+  accent?: "destructive" | "success" | "warning" | "info";
   children: React.ReactNode;
 }) {
   const accentCls =
@@ -459,7 +461,11 @@ function Section({
       ? "border-l-2 border-destructive/60 pl-3"
       : accent === "success"
         ? "border-l-2 border-emerald-500/60 pl-3"
-        : "border-l-2 border-muted-foreground/20 pl-3";
+        : accent === "warning"
+          ? "border-l-2 border-amber-500/60 pl-3"
+          : accent === "info"
+            ? "border-l-2 border-blue-500/60 pl-3"
+            : "border-l-2 border-muted-foreground/20 pl-3";
   return (
     <div className={accentCls}>
       <div className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
