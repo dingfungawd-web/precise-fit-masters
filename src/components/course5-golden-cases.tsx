@@ -385,22 +385,29 @@ function CaseDetail({ c }: { c: Case }) {
         {(media.images.length > 0 || media.videos.length > 0) && (
           <Section title="圖片影片分享">
             {media.images.length > 0 && (
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {media.images.map((url, i) => (
-                  <a
-                    key={`${url}-${i}`}
-                    href={url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block overflow-hidden rounded border bg-muted"
-                  >
-                    <img
-                      src={url}
-                      alt={`案例相片 ${i + 1}`}
-                      loading="lazy"
-                      className="h-40 w-full object-cover"
-                    />
-                  </a>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {media.images.map((img, i) => (
+                  <figure key={`${img.displayUrl}-${i}`} className="overflow-hidden rounded border bg-muted">
+                    <a
+                      href={img.linkUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block"
+                      title="按一下開啟原圖"
+                    >
+                      <img
+                        src={img.displayUrl}
+                        alt={img.caption || `案例相片 ${i + 1}`}
+                        loading="lazy"
+                        className="h-40 w-full object-cover transition-transform hover:scale-[1.02]"
+                      />
+                    </a>
+                    {img.caption && (
+                      <figcaption className="whitespace-pre-wrap px-2 py-1.5 text-xs leading-snug text-muted-foreground">
+                        {img.caption}
+                      </figcaption>
+                    )}
+                  </figure>
                 ))}
               </div>
             )}
