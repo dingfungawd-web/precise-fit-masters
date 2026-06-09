@@ -14,7 +14,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
-import { parseVideos, YouTubeVideoList, type ParsedVideo } from "@/components/youtube-videos";
+import { parseVideos, parseImageItems, YouTubeVideoList, type ParsedVideo, type ParsedImageItem } from "@/components/youtube-videos";
 
 type Case = {
   分類: string; // 門款 / 窗款
