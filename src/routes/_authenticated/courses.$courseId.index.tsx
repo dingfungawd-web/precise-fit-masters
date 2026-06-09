@@ -9,6 +9,38 @@ import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
 import { COURSE_CONFIG } from "@/lib/course-config";
 import { Course4DecisionTool } from "@/components/course4-decision-tool";
 import { Course5GoldenCases } from "@/components/course5-golden-cases";
+import { parseVideos, parseImageItems, YouTubeVideoList, type ParsedImageItem } from "@/components/youtube-videos";
+
+function extractDriveId(url: string): string | null {
+  try {
+    const u = new URL(url.trim());
+    if (!u.hostname.includes("drive.google.com") && !u.hostname.includes("googleusercontent.com")) return null;
+    const m = u.pathname.match(/\/file\/d\/([^/]+)/);
+    if (m) return m[1];
+    const id = u.searchParams.get("id");
+    if (id) return id;
+    const m2 = u.pathname.match(/\/d\/([^/=]+)/);
+    if (m2) return m2[1];
+    return null;
+  } catch {
+    return null;
+  }
+}
+type PhotoEntry = { displayUrl: string; linkUrl: string; caption: string };
+function toPhotoEntries(raw: unknown): PhotoEntry[] {
+  if (typeof raw !== "string") return [];
+  return parseImageItems(raw).map((it: ParsedImageItem) => {
+    const id = extractDriveId(it.url);
+    if (id) {
+      return {
+        displayUrl: `https://lh3.googleusercontent.com/d/${id}=s0`,
+        linkUrl: `https://drive.google.com/file/d/${id}/view`,
+        caption: it.caption,
+      };
+    }
+    return { displayUrl: it.url, linkUrl: it.url, caption: it.caption };
+  });
+}
 
 export const Route = createFileRoute("/_authenticated/courses/$courseId/")({
   component: CoursePage,
@@ -174,8 +206,8 @@ function ItemBlock({
   row: SheetRow;
   config: (typeof COURSE_CONFIG)[string];
 }) {
-  const photos = toArray(row["相片"]);
-  const videos = toArray(row["影片"]);
+  const photos = toPhotoEntries(row["相片"]);
+  const videos = parseVideos(row["影片"]);
 
   return (
     <div className="rounded-lg border bg-card p-4">
@@ -211,11 +243,18 @@ function ItemBlock({
       {photos.length > 0 && (
         <div className="mt-4">
           <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">相片</div>
-          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {photos.map((url) => (
-              <a key={url} href={url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded border">
-                <img src={url} alt="" loading="lazy" className="h-32 w-full object-cover" />
-              </a>
+          <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {photos.map((p, i) => (
+              <figure key={`${p.displayUrl}-${i}`} className="overflow-hidden rounded border bg-muted">
+                <a href={p.linkUrl} target="_blank" rel="noreferrer" className="block" title="按一下開啟原圖">
+                  <img src={p.displayUrl} alt={p.caption || `相片 ${i + 1}`} loading="lazy" className="h-32 w-full object-cover transition-transform hover:scale-[1.02]" />
+                </a>
+                {p.caption && (
+                  <figcaption className="whitespace-pre-wrap px-2 py-1.5 text-xs leading-snug text-muted-foreground">
+                    {p.caption}
+                  </figcaption>
+                )}
+              </figure>
             ))}
           </div>
         </div>
@@ -224,23 +263,10 @@ function ItemBlock({
       {videos.length > 0 && (
         <div className="mt-4">
           <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">影片</div>
-          <ul className="mt-2 space-y-1 text-sm">
-            {videos.map((url) => (
-              <li key={url}>
-                <a href={url} target="_blank" rel="noreferrer" className="text-accent hover:underline">
-                  {url}
-                </a>
-              </li>
-            ))}
-          </ul>
+          <YouTubeVideoList videos={videos} />
         </div>
       )}
     </div>
   );
 }
 
-function toArray(v: unknown): string[] {
-  if (Array.isArray(v)) return v.map(String).filter(Boolean);
-  if (typeof v === "string" && v.trim()) return v.split("|").map((s) => s.trim()).filter(Boolean);
-  return [];
-}
