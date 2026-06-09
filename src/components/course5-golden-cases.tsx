@@ -48,6 +48,7 @@ function toCase(row: SheetRow): Case {
     根本原因: s(row["根本原因"]),
     正確做法: s(row["正確/建議做法"]) || s(row["正確做法"]) || s(row["建議做法"]),
     預防要點: s(row["預防要點"]),
+    安裝部執生處理: s(row["安裝部執生處理"]),
     媒體: s(row["圖片影片分享"]),
     raw: row,
   };
