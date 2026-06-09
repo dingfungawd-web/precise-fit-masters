@@ -459,7 +459,7 @@ function Section({
       ? "border-l-2 border-destructive/60 pl-3"
       : accent === "success"
         ? "border-l-2 border-emerald-500/60 pl-3"
-        : "";
+        : "border-l-2 border-muted-foreground/20 pl-3";
   return (
     <div className={accentCls}>
       <div className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
