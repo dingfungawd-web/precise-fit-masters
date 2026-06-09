@@ -392,6 +392,17 @@ function CaseDetail({ c }: { c: Case }) {
           </Section>
         )}
 
+        {c.安裝部執生處理 && (
+          <Section
+            title="安裝部執生處理"
+            icon={<Wrench className="h-4 w-4 text-blue-600" />}
+          >
+            <p className="whitespace-pre-wrap text-sm leading-relaxed">{c.安裝部執生處理}</p>
+          </Section>
+        )}
+
+
+
         {media.items.length > 0 && (
           <Section title="圖片影片分享">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
