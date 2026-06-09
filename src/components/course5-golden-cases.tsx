@@ -14,7 +14,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
-import { parseVideos, parseImageItems, YouTubeVideoList, type ParsedVideo, type ParsedImageItem } from "@/components/youtube-videos";
+import { parseVideos, parseImageItems, splitItems, YouTubeVideoList, type ParsedVideo, type ParsedImageItem } from "@/components/youtube-videos";
 
 type Case = {
   分類: string; // 門款 / 窗款
@@ -390,36 +390,37 @@ function CaseDetail({ c }: { c: Case }) {
           </Section>
         )}
 
-        {(media.images.length > 0 || media.videos.length > 0) && (
+        {media.items.length > 0 && (
           <Section title="圖片影片分享">
-            {media.images.length > 0 && (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {media.images.map((img, i) => (
-                  <figure key={`${img.displayUrl}-${i}`} className="overflow-hidden rounded border bg-muted">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {media.items.map((m, i) =>
+                m.kind === "image" ? (
+                  <figure key={`img-${i}`} className="overflow-hidden rounded border bg-muted">
                     <a
-                      href={img.linkUrl}
+                      href={m.linkUrl}
                       target="_blank"
                       rel="noreferrer"
                       className="block"
                       title="按一下開啟原圖"
                     >
                       <img
-                        src={img.displayUrl}
-                        alt={img.caption || `案例相片 ${i + 1}`}
+                        src={m.displayUrl}
+                        alt={m.caption || `案例相片 ${i + 1}`}
                         loading="lazy"
                         className="h-40 w-full object-cover transition-transform hover:scale-[1.02]"
                       />
                     </a>
-                    {img.caption && (
+                    {m.caption && (
                       <figcaption className="whitespace-pre-wrap px-2 py-1.5 text-xs leading-snug text-muted-foreground">
-                        {img.caption}
+                        {m.caption}
                       </figcaption>
                     )}
                   </figure>
-                ))}
-              </div>
-            )}
-            <YouTubeVideoList videos={media.videos} />
+                ) : (
+                  <YouTubeVideoList key={`vid-${i}`} videos={[m.video]} />
+                )
+              )}
+            </div>
           </Section>
         )}
       </div>
