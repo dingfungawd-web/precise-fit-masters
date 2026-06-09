@@ -417,7 +417,9 @@ function CaseDetail({ c }: { c: Case }) {
                     )}
                   </figure>
                 ) : (
-                  <YouTubeVideoList key={`vid-${i}`} videos={[m.video]} />
+                  <div key={`vid-${i}`} className="[&>div]:mt-0 [&>div]:grid-cols-1">
+                    <YouTubeVideoList videos={[m.video]} />
+                  </div>
                 )
               )}
             </div>
