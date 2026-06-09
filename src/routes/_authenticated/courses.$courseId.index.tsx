@@ -206,8 +206,8 @@ function ItemBlock({
   row: SheetRow;
   config: (typeof COURSE_CONFIG)[string];
 }) {
-  const photos = toArray(row["相片"]);
-  const videos = toArray(row["影片"]);
+  const photos = toPhotoEntries(row["相片"]);
+  const videos = parseVideos(row["影片"]);
 
   return (
     <div className="rounded-lg border bg-card p-4">
@@ -243,11 +243,18 @@ function ItemBlock({
       {photos.length > 0 && (
         <div className="mt-4">
           <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">相片</div>
-          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {photos.map((url) => (
-              <a key={url} href={url} target="_blank" rel="noreferrer" className="block overflow-hidden rounded border">
-                <img src={url} alt="" loading="lazy" className="h-32 w-full object-cover" />
-              </a>
+          <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {photos.map((p, i) => (
+              <figure key={`${p.displayUrl}-${i}`} className="overflow-hidden rounded border bg-muted">
+                <a href={p.linkUrl} target="_blank" rel="noreferrer" className="block" title="按一下開啟原圖">
+                  <img src={p.displayUrl} alt={p.caption || `相片 ${i + 1}`} loading="lazy" className="h-32 w-full object-cover transition-transform hover:scale-[1.02]" />
+                </a>
+                {p.caption && (
+                  <figcaption className="whitespace-pre-wrap px-2 py-1.5 text-xs leading-snug text-muted-foreground">
+                    {p.caption}
+                  </figcaption>
+                )}
+              </figure>
             ))}
           </div>
         </div>
@@ -256,15 +263,7 @@ function ItemBlock({
       {videos.length > 0 && (
         <div className="mt-4">
           <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">影片</div>
-          <ul className="mt-2 space-y-1 text-sm">
-            {videos.map((url) => (
-              <li key={url}>
-                <a href={url} target="_blank" rel="noreferrer" className="text-accent hover:underline">
-                  {url}
-                </a>
-              </li>
-            ))}
-          </ul>
+          <YouTubeVideoList videos={videos} />
         </div>
       )}
     </div>
