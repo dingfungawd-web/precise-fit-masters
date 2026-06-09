@@ -14,7 +14,6 @@ function extractYouTubeId(url: string): string | null {
       const v = u.searchParams.get("v");
       if (v) return v;
       const parts = u.pathname.split("/").filter(Boolean);
-      // /embed/ID, /shorts/ID, /live/ID
       if (parts.length >= 2 && ["embed", "shorts", "live"].includes(parts[0])) {
         return parts[1];
       }
@@ -25,24 +24,72 @@ function extractYouTubeId(url: string): string | null {
   }
 }
 
+/**
+ * 統一解析規則：
+ *  - 以 http(s):// 開頭的一行 = 新項目（URL）
+ *  - 之後的非 URL 行 = 該項目的多行說明
+ *  - 向後相容：「說明 :: URL」單行寫法亦可
+ */
+type Item = { url: string; lines: string[] };
+
+function splitItems(raw: string): Item[] {
+  const rawLines = raw.split(/\r?\n/).map((l) => l.trim());
+  const items: Item[] = [];
+  let current: Item | null = null;
+  const push = () => {
+    if (current) items.push(current);
+    current = null;
+  };
+  for (const line of rawLines) {
+    if (!line) continue;
+    // legacy single-line "說明 :: URL"
+    const sepIdx = line.indexOf("::");
+    if (sepIdx !== -1) {
+      const left = line.slice(0, sepIdx).trim();
+      const right = line.slice(sepIdx + 2).trim();
+      if (/^https?:\/\//i.test(right)) {
+        push();
+        items.push({ url: right, lines: left ? [left] : [] });
+        continue;
+      }
+    }
+    if (/^https?:\/\//i.test(line)) {
+      push();
+      current = { url: line, lines: [] };
+    } else if (current) {
+      current.lines.push(line);
+    }
+  }
+  push();
+  return items;
+}
+
 export function parseVideos(raw: unknown): ParsedVideo[] {
   if (typeof raw !== "string") return [];
-  const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   const out: ParsedVideo[] = [];
-  for (const line of lines) {
-    const sepIdx = line.indexOf("::");
-    let title = "";
-    let url = line;
-    if (sepIdx !== -1) {
-      title = line.slice(0, sepIdx).trim();
-      url = line.slice(sepIdx + 2).trim();
-    }
-    const id = extractYouTubeId(url);
+  for (const item of splitItems(raw)) {
+    const id = extractYouTubeId(item.url);
     if (!id) continue;
-    out.push({ title: title || "影片", url, id });
+    const title = item.lines.join("\n").trim() || "影片";
+    out.push({ title, url: item.url, id });
   }
   return out;
 }
+
+export type ParsedImageItem = { url: string; caption: string };
+
+/** 解析非 YouTube 的 URL 項目（保留 caption 多行） */
+export function parseImageItems(raw: string): ParsedImageItem[] {
+  const out: ParsedImageItem[] = [];
+  for (const item of splitItems(raw)) {
+    if (extractYouTubeId(item.url)) continue;
+    out.push({ url: item.url, caption: item.lines.join("\n").trim() });
+  }
+  return out;
+}
+
+/** 公用 splitter 給 caller 自行分流 */
+export { splitItems };
 
 export function YouTubeVideoList({ videos }: { videos: ParsedVideo[] }) {
   if (videos.length === 0) return null;
@@ -91,8 +138,8 @@ function YouTubeVideoCard({ video }: { video: ParsedVideo }) {
           </button>
         )}
       </div>
-      <div className="flex items-center justify-between gap-2 px-3 py-2">
-        <p className="truncate text-sm font-medium">{video.title}</p>
+      <div className="flex items-start justify-between gap-2 px-3 py-2">
+        <p className="whitespace-pre-wrap text-sm font-medium leading-snug">{video.title}</p>
         <a
           href={watchUrl}
           target="_blank"
