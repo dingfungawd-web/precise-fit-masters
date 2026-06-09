@@ -179,8 +179,3 @@ function DetailCard({
   );
 }
 
-function toArray(v: unknown): string[] {
-  if (Array.isArray(v)) return v.map(String).filter(Boolean);
-  if (typeof v === "string" && v.trim()) return v.split("|").map((s) => s.trim()).filter(Boolean);
-  return [];
-}
