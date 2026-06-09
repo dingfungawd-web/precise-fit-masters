@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, Lightbulb, Search } from "lucide-react";
+import { ArrowLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, Lightbulb, Search, Wrench } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
