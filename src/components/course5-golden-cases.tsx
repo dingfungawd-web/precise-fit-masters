@@ -14,7 +14,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
-import { parseVideos, YouTubeVideoList, type ParsedVideo } from "@/components/youtube-videos";
+import { parseVideos, parseImageItems, YouTubeVideoList, type ParsedVideo, type ParsedImageItem } from "@/components/youtube-videos";
 
 type Case = {
   分類: string; // 門款 / 窗款
@@ -69,10 +69,17 @@ function extractDriveId(url: string): string | null {
   }
 }
 
-function driveToImage(url: string): string {
+function driveDisplayUrl(url: string): string {
   const id = extractDriveId(url);
   if (!id) return url;
-  return `https://lh3.googleusercontent.com/d/${id}=w1600`;
+  // =s0 = 原圖原尺寸
+  return `https://lh3.googleusercontent.com/d/${id}=s0`;
+}
+
+function driveOriginalLink(url: string): string {
+  const id = extractDriveId(url);
+  if (!id) return url;
+  return `https://drive.google.com/file/d/${id}/view`;
 }
 
 function isYouTube(url: string): boolean {
@@ -84,24 +91,19 @@ function isYouTube(url: string): boolean {
   }
 }
 
-type Media = { images: string[]; videos: ParsedVideo[] };
+type ImageEntry = { displayUrl: string; linkUrl: string; caption: string };
+type Media = { images: ImageEntry[]; videos: ParsedVideo[] };
 
 function parseMedia(raw: string): Media {
-  const images: string[] = [];
-  const videoLines: string[] = [];
-  const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  for (const line of lines) {
-    const sepIdx = line.indexOf("::");
-    const url = sepIdx !== -1 ? line.slice(sepIdx + 2).trim() : line;
-    if (isYouTube(url)) {
-      videoLines.push(line);
-    } else if (extractDriveId(url)) {
-      images.push(driveToImage(url));
-    } else if (/^https?:\/\//i.test(url)) {
-      images.push(url);
+  const videos = parseVideos(raw);
+  const imageItems = parseImageItems(raw);
+  const images: ImageEntry[] = imageItems.map((it: ParsedImageItem) => {
+    if (extractDriveId(it.url)) {
+      return { displayUrl: driveDisplayUrl(it.url), linkUrl: driveOriginalLink(it.url), caption: it.caption };
     }
-  }
-  return { images, videos: parseVideos(videoLines.join("\n")) };
+    return { displayUrl: it.url, linkUrl: it.url, caption: it.caption };
+  });
+  return { images, videos };
 }
 
 export function Course5GoldenCases() {
@@ -383,22 +385,29 @@ function CaseDetail({ c }: { c: Case }) {
         {(media.images.length > 0 || media.videos.length > 0) && (
           <Section title="圖片影片分享">
             {media.images.length > 0 && (
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {media.images.map((url, i) => (
-                  <a
-                    key={`${url}-${i}`}
-                    href={url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block overflow-hidden rounded border bg-muted"
-                  >
-                    <img
-                      src={url}
-                      alt={`案例相片 ${i + 1}`}
-                      loading="lazy"
-                      className="h-40 w-full object-cover"
-                    />
-                  </a>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {media.images.map((img, i) => (
+                  <figure key={`${img.displayUrl}-${i}`} className="overflow-hidden rounded border bg-muted">
+                    <a
+                      href={img.linkUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block"
+                      title="按一下開啟原圖"
+                    >
+                      <img
+                        src={img.displayUrl}
+                        alt={img.caption || `案例相片 ${i + 1}`}
+                        loading="lazy"
+                        className="h-40 w-full object-cover transition-transform hover:scale-[1.02]"
+                      />
+                    </a>
+                    {img.caption && (
+                      <figcaption className="whitespace-pre-wrap px-2 py-1.5 text-xs leading-snug text-muted-foreground">
+                        {img.caption}
+                      </figcaption>
+                    )}
+                  </figure>
                 ))}
               </div>
             )}
