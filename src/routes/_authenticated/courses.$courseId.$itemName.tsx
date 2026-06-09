@@ -7,7 +7,38 @@ import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courses";
 import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
 import { COURSE_CONFIG } from "@/lib/course-config";
-import { parseVideos, YouTubeVideoList } from "@/components/youtube-videos";
+import { parseVideos, parseImageItems, YouTubeVideoList, type ParsedImageItem } from "@/components/youtube-videos";
+
+function extractDriveId(url: string): string | null {
+  try {
+    const u = new URL(url.trim());
+    if (!u.hostname.includes("drive.google.com") && !u.hostname.includes("googleusercontent.com")) return null;
+    const m = u.pathname.match(/\/file\/d\/([^/]+)/);
+    if (m) return m[1];
+    const id = u.searchParams.get("id");
+    if (id) return id;
+    const m2 = u.pathname.match(/\/d\/([^/=]+)/);
+    if (m2) return m2[1];
+    return null;
+  } catch {
+    return null;
+  }
+}
+type PhotoEntry = { displayUrl: string; linkUrl: string; caption: string };
+function toPhotoEntries(raw: unknown): PhotoEntry[] {
+  if (typeof raw !== "string") return [];
+  return parseImageItems(raw).map((it: ParsedImageItem) => {
+    const id = extractDriveId(it.url);
+    if (id) {
+      return {
+        displayUrl: `https://lh3.googleusercontent.com/d/${id}=s0`,
+        linkUrl: `https://drive.google.com/file/d/${id}/view`,
+        caption: it.caption,
+      };
+    }
+    return { displayUrl: it.url, linkUrl: it.url, caption: it.caption };
+  });
+}
 
 export const Route = createFileRoute("/_authenticated/courses/$courseId/$itemName")({
   component: ItemDetailPage,
