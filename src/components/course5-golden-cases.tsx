@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, Lightbulb, Search } from "lucide-react";
+import { ArrowLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, Lightbulb, Search, Wrench } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -26,6 +26,7 @@ type Case = {
   根本原因: string;
   正確做法: string;
   預防要點: string;
+  安裝部執生處理: string;
   媒體: string;
   raw: SheetRow;
 };
@@ -47,6 +48,7 @@ function toCase(row: SheetRow): Case {
     根本原因: s(row["根本原因"]),
     正確做法: s(row["正確/建議做法"]) || s(row["正確做法"]) || s(row["建議做法"]),
     預防要點: s(row["預防要點"]),
+    安裝部執生處理: s(row["安裝部執生處理"]),
     媒體: s(row["圖片影片分享"]),
     raw: row,
   };
@@ -389,6 +391,17 @@ function CaseDetail({ c }: { c: Case }) {
             <p className="whitespace-pre-wrap text-sm leading-relaxed">{c.預防要點}</p>
           </Section>
         )}
+
+        {c.安裝部執生處理 && (
+          <Section
+            title="安裝部執生處理"
+            icon={<Wrench className="h-4 w-4 text-blue-600" />}
+          >
+            <p className="whitespace-pre-wrap text-sm leading-relaxed">{c.安裝部執生處理}</p>
+          </Section>
+        )}
+
+
 
         {media.items.length > 0 && (
           <Section title="圖片影片分享">
