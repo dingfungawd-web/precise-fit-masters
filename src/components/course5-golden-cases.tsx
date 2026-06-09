@@ -26,6 +26,7 @@ type Case = {
   根本原因: string;
   正確做法: string;
   預防要點: string;
+  安裝部執生處理: string;
   媒體: string;
   raw: SheetRow;
 };
