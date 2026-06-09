@@ -240,6 +240,13 @@ function ItemBlock({
         })}
       </dl>
 
+      {videos.length > 0 && (
+        <div className="mt-4">
+          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">影片</div>
+          <YouTubeVideoList videos={videos} />
+        </div>
+      )}
+
       {photos.length > 0 && (
         <div className="mt-4">
           <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">相片</div>
@@ -257,13 +264,6 @@ function ItemBlock({
               </figure>
             ))}
           </div>
-        </div>
-      )}
-
-      {videos.length > 0 && (
-        <div className="mt-4">
-          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">影片</div>
-          <YouTubeVideoList videos={videos} />
         </div>
       )}
     </div>

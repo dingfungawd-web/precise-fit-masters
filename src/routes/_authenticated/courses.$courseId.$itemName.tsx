@@ -149,6 +149,13 @@ function DetailCard({
         );
       })}
 
+      {videos.length > 0 && (
+        <section className="px-6 py-5">
+          <h2 className="text-xl font-semibold tracking-tight">影片</h2>
+          <YouTubeVideoList videos={videos} />
+        </section>
+      )}
+
       {photos.length > 0 && (
         <section className="px-6 py-5">
           <h2 className="text-xl font-semibold tracking-tight">相片</h2>
@@ -166,13 +173,6 @@ function DetailCard({
               </figure>
             ))}
           </div>
-        </section>
-      )}
-
-      {videos.length > 0 && (
-        <section className="px-6 py-5">
-          <h2 className="text-xl font-semibold tracking-tight">影片</h2>
-          <YouTubeVideoList videos={videos} />
         </section>
       )}
     </Card>

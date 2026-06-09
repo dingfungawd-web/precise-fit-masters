@@ -14,7 +14,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
-import { parseVideos, parseImageItems, YouTubeVideoList, type ParsedVideo, type ParsedImageItem } from "@/components/youtube-videos";
+import { parseVideos, parseImageItems, splitItems, YouTubeVideoList, type ParsedVideo, type ParsedImageItem } from "@/components/youtube-videos";
 
 type Case = {
   分類: string; // 門款 / 窗款
@@ -91,19 +91,27 @@ function isYouTube(url: string): boolean {
   }
 }
 
-type ImageEntry = { displayUrl: string; linkUrl: string; caption: string };
-type Media = { images: ImageEntry[]; videos: ParsedVideo[] };
+type ImageEntry = { kind: "image"; displayUrl: string; linkUrl: string; caption: string };
+type VideoEntry = { kind: "video"; video: ParsedVideo };
+type MediaItem = ImageEntry | VideoEntry;
+type Media = { items: MediaItem[] };
 
 function parseMedia(raw: string): Media {
-  const videos = parseVideos(raw);
-  const imageItems = parseImageItems(raw);
-  const images: ImageEntry[] = imageItems.map((it: ParsedImageItem) => {
-    if (extractDriveId(it.url)) {
-      return { displayUrl: driveDisplayUrl(it.url), linkUrl: driveOriginalLink(it.url), caption: it.caption };
+  const items: MediaItem[] = [];
+  for (const it of splitItems(raw)) {
+    const yt = parseVideos(it.url + (it.lines.length ? "\n" + it.lines.join("\n") : ""));
+    if (yt.length > 0) {
+      items.push({ kind: "video", video: yt[0] });
+      continue;
     }
-    return { displayUrl: it.url, linkUrl: it.url, caption: it.caption };
-  });
-  return { images, videos };
+    const caption = it.lines.join("\n").trim();
+    if (extractDriveId(it.url)) {
+      items.push({ kind: "image", displayUrl: driveDisplayUrl(it.url), linkUrl: driveOriginalLink(it.url), caption });
+    } else {
+      items.push({ kind: "image", displayUrl: it.url, linkUrl: it.url, caption });
+    }
+  }
+  return { items };
 }
 
 export function Course5GoldenCases() {
@@ -382,36 +390,39 @@ function CaseDetail({ c }: { c: Case }) {
           </Section>
         )}
 
-        {(media.images.length > 0 || media.videos.length > 0) && (
+        {media.items.length > 0 && (
           <Section title="圖片影片分享">
-            {media.images.length > 0 && (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {media.images.map((img, i) => (
-                  <figure key={`${img.displayUrl}-${i}`} className="overflow-hidden rounded border bg-muted">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {media.items.map((m, i) =>
+                m.kind === "image" ? (
+                  <figure key={`img-${i}`} className="overflow-hidden rounded border bg-muted">
                     <a
-                      href={img.linkUrl}
+                      href={m.linkUrl}
                       target="_blank"
                       rel="noreferrer"
                       className="block"
                       title="按一下開啟原圖"
                     >
                       <img
-                        src={img.displayUrl}
-                        alt={img.caption || `案例相片 ${i + 1}`}
+                        src={m.displayUrl}
+                        alt={m.caption || `案例相片 ${i + 1}`}
                         loading="lazy"
                         className="h-40 w-full object-cover transition-transform hover:scale-[1.02]"
                       />
                     </a>
-                    {img.caption && (
+                    {m.caption && (
                       <figcaption className="whitespace-pre-wrap px-2 py-1.5 text-xs leading-snug text-muted-foreground">
-                        {img.caption}
+                        {m.caption}
                       </figcaption>
                     )}
                   </figure>
-                ))}
-              </div>
-            )}
-            <YouTubeVideoList videos={media.videos} />
+                ) : (
+                  <div key={`vid-${i}`} className="[&>div]:mt-0 [&>div]:grid-cols-1">
+                    <YouTubeVideoList videos={[m.video]} />
+                  </div>
+                )
+              )}
+            </div>
           </Section>
         )}
       </div>
