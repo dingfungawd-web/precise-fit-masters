@@ -351,6 +351,42 @@ function CaseDetail({ c }: { c: Case }) {
       <h2 className="mt-3 text-xl font-semibold">{c.標題}</h2>
 
       <div className="mt-6 space-y-5">
+        {media.items.length > 0 && (
+          <Section title="圖片影片分享">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {media.items.map((m, i) =>
+                m.kind === "image" ? (
+                  <figure key={`img-${i}`} className="overflow-hidden rounded border bg-muted">
+                    <a
+                      href={m.linkUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block"
+                      title="按一下開啟原圖"
+                    >
+                      <img
+                        src={m.displayUrl}
+                        alt={m.caption || `案例相片 ${i + 1}`}
+                        loading="lazy"
+                        className="h-40 w-full object-cover transition-transform hover:scale-[1.02]"
+                      />
+                    </a>
+                    {m.caption && (
+                      <figcaption className="whitespace-pre-wrap px-2 py-1.5 text-xs leading-snug text-muted-foreground">
+                        {m.caption}
+                      </figcaption>
+                    )}
+                  </figure>
+                ) : (
+                  <div key={`vid-${i}`} className="[&>div]:mt-0 [&>div]:grid-cols-1">
+                    <YouTubeVideoList videos={[m.video]} />
+                  </div>
+                )
+              )}
+            </div>
+          </Section>
+        )}
+
         {c.現場情況 && (
           <Section title="現場情況">
             <p className="whitespace-pre-wrap text-sm leading-relaxed">{c.現場情況}</p>
@@ -400,44 +436,6 @@ function CaseDetail({ c }: { c: Case }) {
             accent="info"
           >
             <p className="whitespace-pre-wrap text-sm leading-relaxed">{c.安裝部執生處理}</p>
-          </Section>
-        )}
-
-
-
-        {media.items.length > 0 && (
-          <Section title="圖片影片分享">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {media.items.map((m, i) =>
-                m.kind === "image" ? (
-                  <figure key={`img-${i}`} className="overflow-hidden rounded border bg-muted">
-                    <a
-                      href={m.linkUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block"
-                      title="按一下開啟原圖"
-                    >
-                      <img
-                        src={m.displayUrl}
-                        alt={m.caption || `案例相片 ${i + 1}`}
-                        loading="lazy"
-                        className="h-40 w-full object-cover transition-transform hover:scale-[1.02]"
-                      />
-                    </a>
-                    {m.caption && (
-                      <figcaption className="whitespace-pre-wrap px-2 py-1.5 text-xs leading-snug text-muted-foreground">
-                        {m.caption}
-                      </figcaption>
-                    )}
-                  </figure>
-                ) : (
-                  <div key={`vid-${i}`} className="[&>div]:mt-0 [&>div]:grid-cols-1">
-                    <YouTubeVideoList videos={[m.video]} />
-                  </div>
-                )
-              )}
-            </div>
           </Section>
         )}
       </div>
