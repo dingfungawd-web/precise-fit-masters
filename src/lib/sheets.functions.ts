@@ -22,7 +22,7 @@ const COURSE_TO_SHEET: Record<string, SheetName> = {
 };
 
 type CacheEntry = { at: number; data: { sheetName: SheetName; rows: SheetRow[] } };
-const CACHE_TTL_MS = 30 * 1000;
+const CACHE_TTL_MS = 5 * 60 * 1000;
 const g = globalThis as unknown as { __sheetCache?: Map<string, CacheEntry> };
 const cache: Map<string, CacheEntry> = g.__sheetCache ?? (g.__sheetCache = new Map());
 
@@ -48,16 +48,23 @@ export const getCourseSheet = createServerFn({ method: "GET" })
     const range = `'${sheetName}'!A1:Z1000`;
     const url = `${GATEWAY_URL}/spreadsheets/${SPREADSHEET_ID}/values/${range}`;
 
-    const res = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "X-Connection-Api-Key": GOOGLE_SHEETS_API_KEY,
-      },
-    });
-    const bodyText = await res.text();
+    let res: Response;
+    let bodyText: string;
+    try {
+      res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "X-Connection-Api-Key": GOOGLE_SHEETS_API_KEY,
+        },
+      });
+      bodyText = await res.text();
+    } catch (e) {
+      if (cached) return cached.data;
+      throw e;
+    }
     if (!res.ok) {
-      // On rate limit, serve stale cache if available
-      if (res.status === 429 && cached) return cached.data;
+      // Serve stale cache on any error (e.g. 429 quota) instead of crashing the page
+      if (cached) return cached.data;
       throw new Error(`Google Sheets API ${res.status}: ${bodyText.slice(0, 300)}`);
     }
 
