@@ -27,7 +27,7 @@ const g = globalThis as unknown as { __sheetCache?: Map<string, CacheEntry> };
 const cache: Map<string, CacheEntry> = g.__sheetCache ?? (g.__sheetCache = new Map());
 
 export const getCourseSheet = createServerFn({ method: "GET" })
-  .inputValidator((input: { courseId: string }) => {
+  .inputValidator((input: { courseId: string; forceRefresh?: boolean }) => {
     if (!COURSE_TO_SHEET[input.courseId]) {
       throw new Error(`Course ${input.courseId} 未配置 Google Sheets`);
     }
@@ -35,7 +35,7 @@ export const getCourseSheet = createServerFn({ method: "GET" })
   })
   .handler(async ({ data }) => {
     const cached = cache.get(data.courseId);
-    if (cached && Date.now() - cached.at < CACHE_TTL_MS) {
+    if (!data.forceRefresh && cached && Date.now() - cached.at < CACHE_TTL_MS) {
       return cached.data;
     }
 
@@ -45,7 +45,7 @@ export const getCourseSheet = createServerFn({ method: "GET" })
     if (!GOOGLE_SHEETS_API_KEY) throw new Error("Google Sheets 連接未設定");
 
     const sheetName = COURSE_TO_SHEET[data.courseId];
-    const range = `'${sheetName}'!A1:Z1000`;
+    const range = `'${sheetName}'!A:Z`;
     const url = `${GATEWAY_URL}/spreadsheets/${SPREADSHEET_ID}/values/${range}`;
 
     let res: Response;
