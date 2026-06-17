@@ -120,7 +120,8 @@ function parseMedia(raw: string): Media {
 export function Course5GoldenCases() {
   const fetchSheet = useServerFn(getCourseSheet);
   const queryClient = useQueryClient();
-  const { data, isLoading, isFetching, error, refetch } = useQuery({
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { data, isLoading, isFetching, error } = useQuery({
     queryKey: ["course-sheet", "5"],
     queryFn: () => fetchSheet({ data: { courseId: "5" } }),
     staleTime: 30 * 1000,
@@ -129,12 +130,13 @@ export function Course5GoldenCases() {
   });
 
   const refreshSheet = async () => {
-    await queryClient.fetchQuery({
-      queryKey: ["course-sheet", "5"],
-      queryFn: () => fetchSheet({ data: { courseId: "5", forceRefresh: true } }),
-      staleTime: 30 * 1000,
-    });
-    refetch();
+    setIsRefreshing(true);
+    try {
+      const fresh = await fetchSheet({ data: { courseId: "5", forceRefresh: true } });
+      queryClient.setQueryData(["course-sheet", "5"], fresh);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const [tab, setTab] = useState<"門款" | "窗款">("門款");
@@ -311,9 +313,9 @@ export function Course5GoldenCases() {
           size="sm"
           className="h-8 text-xs"
           onClick={refreshSheet}
-          disabled={isFetching}
+          disabled={isFetching || isRefreshing}
         >
-          <RefreshCw className={`mr-1 h-3 w-3 ${isFetching ? "animate-spin" : ""}`} />
+          <RefreshCw className={`mr-1 h-3 w-3 ${isFetching || isRefreshing ? "animate-spin" : ""}`} />
           重新整理
         </Button>
       </div>
