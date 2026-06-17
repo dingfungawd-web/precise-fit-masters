@@ -1,9 +1,10 @@
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, Lightbulb, Search, Wrench } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, Lightbulb, Search, Wrench, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Breadcrumb,
@@ -118,12 +119,23 @@ function parseMedia(raw: string): Media {
 
 export function Course5GoldenCases() {
   const fetchSheet = useServerFn(getCourseSheet);
-  const { data, isLoading, error } = useQuery({
+  const queryClient = useQueryClient();
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ["course-sheet", "5"],
     queryFn: () => fetchSheet({ data: { courseId: "5" } }),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000,
     gcTime: 10 * 60 * 1000,
+    retry: (count, err) => (((err as Error)?.message?.includes("429")) ? false : count < 2),
   });
+
+  const refreshSheet = async () => {
+    await queryClient.fetchQuery({
+      queryKey: ["course-sheet", "5"],
+      queryFn: () => fetchSheet({ data: { courseId: "5", forceRefresh: true } }),
+      staleTime: 30 * 1000,
+    });
+    refetch();
+  };
 
   const [tab, setTab] = useState<"門款" | "窗款">("門款");
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
@@ -290,6 +302,21 @@ export function Course5GoldenCases() {
 
   return (
     <div className="mt-6 space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">
+          已載入 {cases.length} 個案例。Google Sheets 更新後可按「重新整理」即時同步。
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 text-xs"
+          onClick={refreshSheet}
+          disabled={isFetching}
+        >
+          <RefreshCw className={`mr-1 h-3 w-3 ${isFetching ? "animate-spin" : ""}`} />
+          重新整理
+        </Button>
+      </div>
       <Tabs value={tab} onValueChange={(v) => { setTab(v as "門款" | "窗款"); setSelectedStyle(null); }}>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <TabsList>
