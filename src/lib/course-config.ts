@@ -29,10 +29,12 @@ export const COURSE_CONFIG: Record<
   "2": {
     description: "鋁通料目錄，按通料名稱分類，每個細分有用途及組合說明。",
     groupBy: "通料名稱",
-    titleField: "細心",
+    titleField: "通料名稱",
     fields: [
+      { key: "細分", label: "細分", long: true },
       { key: "用途", label: "用途", long: true },
       { key: "組合", label: "組合", long: true },
+      { key: "圖片影片庫", label: "圖片影片庫", long: true, videoKey: "圖片影片庫" },
     ],
   },
   "3": {
