@@ -170,6 +170,29 @@ function SheetContent({
     groups.get(key)!.push(row);
   }
 
+  if (flatList) {
+    return (
+      <Card className="p-6">
+        <div className="grid gap-2 sm:grid-cols-2">
+          {rows.map((row, idx) => {
+            const name = String(row[config.titleField] ?? "（未命名）");
+            return (
+              <Link
+                key={`${name}-${idx}`}
+                to="/courses/$courseId/$itemName"
+                params={{ courseId, itemName: name }}
+                className="flex items-center justify-between rounded-lg border bg-card px-4 py-3 text-sm font-medium hover:bg-accent/40 hover:border-accent transition-colors"
+              >
+                <span>{name}</span>
+                <span className="text-muted-foreground">›</span>
+              </Link>
+            );
+          })}
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <>
       {Array.from(groups.entries()).map(([groupName, groupRows]) => (
