@@ -132,7 +132,8 @@ function CoursePage() {
               rows={data.rows}
               config={config}
               courseId={courseId}
-              listOnly={courseId === "3" || courseId === "1"}
+              listOnly={courseId === "3" || courseId === "1" || courseId === "2"}
+              flatList={courseId === "2"}
             />
           )}
         </div>
@@ -146,11 +147,13 @@ function SheetContent({
   config,
   courseId,
   listOnly,
+  flatList,
 }: {
   rows: SheetRow[];
   config: (typeof COURSE_CONFIG)[string];
   courseId: string;
   listOnly?: boolean;
+  flatList?: boolean;
 }) {
   if (rows.length === 0) {
     return (
@@ -165,6 +168,29 @@ function SheetContent({
     const key = String(row[config.groupBy] ?? "未分類");
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key)!.push(row);
+  }
+
+  if (flatList) {
+    return (
+      <Card className="p-6">
+        <div className="grid gap-2 sm:grid-cols-2">
+          {rows.map((row, idx) => {
+            const name = String(row[config.titleField] ?? "（未命名）");
+            return (
+              <Link
+                key={`${name}-${idx}`}
+                to="/courses/$courseId/$itemName"
+                params={{ courseId, itemName: name }}
+                className="flex items-center justify-between rounded-lg border bg-card px-4 py-3 text-sm font-medium hover:bg-accent/40 hover:border-accent transition-colors"
+              >
+                <span>{name}</span>
+                <span className="text-muted-foreground">›</span>
+              </Link>
+            );
+          })}
+        </div>
+      </Card>
+    );
   }
 
   return (
