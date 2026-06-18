@@ -147,11 +147,13 @@ function SheetContent({
   config,
   courseId,
   listOnly,
+  flatList,
 }: {
   rows: SheetRow[];
   config: (typeof COURSE_CONFIG)[string];
   courseId: string;
   listOnly?: boolean;
+  flatList?: boolean;
 }) {
   if (rows.length === 0) {
     return (
