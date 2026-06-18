@@ -132,7 +132,8 @@ function CoursePage() {
               rows={data.rows}
               config={config}
               courseId={courseId}
-              listOnly={courseId === "3" || courseId === "1"}
+              listOnly={courseId === "3" || courseId === "1" || courseId === "2"}
+              flatList={courseId === "2"}
             />
           )}
         </div>
