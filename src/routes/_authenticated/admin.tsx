@@ -1,7 +1,7 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Trash2, Loader2, UserPlus, Pencil } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -252,24 +252,14 @@ function EditDialog({
   const [status, setStatus] = useState<"active" | "inactive">("active");
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Reset when opening different account
-  const accountId = account?.id;
-  useState(() => undefined); // noop
-  if (account && accountId !== undefined) {
-    // sync once when account changes
-  }
-
-  // Use effect-like sync via key prop is cleaner; do it inline:
-  if (account && (window as unknown as { __lastEditId?: string }).__lastEditId !== account.id) {
-    (window as unknown as { __lastEditId?: string }).__lastEditId = account.id;
-    setDisplayName(account.display_name ?? "");
-    setPassword("");
-    setStatus((account.status as "active" | "inactive") ?? "active");
-    setIsAdmin(account.roles.includes("admin"));
-  }
-  if (!account && (window as unknown as { __lastEditId?: string }).__lastEditId) {
-    (window as unknown as { __lastEditId?: string }).__lastEditId = undefined;
-  }
+  useEffect(() => {
+    if (account) {
+      setDisplayName(account.display_name ?? "");
+      setPassword("");
+      setStatus((account.status as "active" | "inactive") ?? "active");
+      setIsAdmin(account.roles.includes("admin"));
+    }
+  }, [account]);
 
   function submit() {
     if (!account) return;
