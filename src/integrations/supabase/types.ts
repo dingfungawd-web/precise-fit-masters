@@ -19,19 +19,25 @@ export type Database = {
           created_at: string
           display_name: string | null
           email: string
+          employee_id: string | null
           id: string
+          status: string
         }
         Insert: {
           created_at?: string
           display_name?: string | null
           email: string
+          employee_id?: string | null
           id: string
+          status?: string
         }
         Update: {
           created_at?: string
           display_name?: string | null
           email?: string
+          employee_id?: string | null
           id?: string
+          status?: string
         }
         Relationships: []
       }
@@ -61,6 +67,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_email_by_employee_id: {
+        Args: { _employee_id: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
