@@ -15,7 +15,7 @@ export const Route = createFileRoute("/")({
 function LoginPage() {
   const { user, loading, signIn } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -26,7 +26,7 @@ function LoginPage() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    const { error } = await signIn(email, password);
+    const { error } = await signIn(loginId, password);
     setSubmitting(false);
     if (error) {
       toast.error("登入失敗", { description: error });
@@ -49,15 +49,15 @@ function LoginPage() {
         <Card className="p-6">
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">電郵</Label>
+              <Label htmlFor="loginId">員工編號</Label>
               <Input
-                id="email"
-                type="email"
-                autoComplete="email"
+                id="loginId"
+                type="text"
+                autoComplete="username"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                value={loginId}
+                onChange={(e) => setLoginId(e.target.value)}
+                placeholder="例如：A001"
               />
             </div>
             <div className="space-y-2">
