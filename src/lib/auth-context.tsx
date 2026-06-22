@@ -22,20 +22,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       if (s?.user) {
-        setTimeout(() => checkUser(s.user.id), 0);
+        setLoading(true);
+        setTimeout(() => {
+          checkUser(s.user.id).finally(() => setLoading(false));
+        }, 0);
       } else {
         setIsAdmin(false);
+        setLoading(false);
       }
     });
 
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (data.session?.user) checkUser(data.session.user.id);
-      setLoading(false);
+      if (data.session?.user) {
+        checkUser(data.session.user.id).finally(() => setLoading(false));
+      } else {
+        setLoading(false);
+      }
     });
 
     return () => sub.subscription.unsubscribe();
   }, []);
+
 
   async function checkUser(userId: string) {
     // Block inactive users
