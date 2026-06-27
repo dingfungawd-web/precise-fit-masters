@@ -1,10 +1,10 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Ruler, LogOut, Shield } from "lucide-react";
+import { Ruler, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/auth-context";
+import { useGate } from "@/lib/gate-context";
 
 export function SiteHeader() {
-  const { user, isAdmin, signOut } = useAuth();
+  const { lock } = useGate();
   const navigate = useNavigate();
 
   return (
@@ -19,26 +19,16 @@ export function SiteHeader() {
             <div className="text-xs text-muted-foreground">Precision Masters</div>
           </div>
         </Link>
-        <div className="flex items-center gap-3">
-          {isAdmin && (
-            <Link to="/admin">
-              <Button variant="outline" size="sm">
-                <Shield className="h-4 w-4" /> 管理員後台
-              </Button>
-            </Link>
-          )}
-          <span className="hidden text-sm text-muted-foreground sm:inline">{user?.email}</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={async () => {
-              await signOut();
-              navigate({ to: "/" });
-            }}
-          >
-            <LogOut className="h-4 w-4" /> 登出
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            lock();
+            navigate({ to: "/" });
+          }}
+        >
+          <LogOut className="h-4 w-4" /> 鎖定
+        </Button>
       </div>
     </header>
   );

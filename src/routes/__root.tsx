@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
-import { AuthProvider } from "@/lib/auth-context";
+import { GateProvider } from "@/lib/gate-context";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -104,10 +104,10 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+      <GateProvider>
         <Outlet />
         <Toaster richColors position="top-center" />
-      </AuthProvider>
+      </GateProvider>
     </QueryClientProvider>
   );
 }

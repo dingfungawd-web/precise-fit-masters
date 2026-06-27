@@ -5,83 +5,68 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { useAuth } from "@/lib/auth-context";
+import { useGate } from "@/lib/gate-context";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
-  component: LoginPage,
+  component: UnlockPage,
 });
 
-function LoginPage() {
-  const { user, loading, signIn } = useAuth();
+function UnlockPage() {
+  const { unlocked, ready, unlock } = useGate();
   const navigate = useNavigate();
-  const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && user) {
+  if (ready && unlocked) {
     return <Navigate to="/dashboard" />;
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setSubmitting(true);
-    const { error } = await signIn(loginId, password);
+    const ok = await unlock(password);
     setSubmitting(false);
-    if (error) {
-      toast.error("登入失敗", { description: error });
+    if (!ok) {
+      toast.error("密碼錯誤", { description: "請聯絡管理員取得本月密碼。" });
       return;
     }
-    toast.success("登入成功");
+    toast.success("解鎖成功");
     navigate({ to: "/dashboard" });
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md">
-        <div className="mb-8 flex flex-col items-center text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
+      <Card className="w-full max-w-md p-8">
+        <div className="flex flex-col items-center text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <Ruler className="h-7 w-7" />
           </div>
           <h1 className="mt-4 text-2xl font-semibold tracking-tight">全港最精準度尺培訓平台</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Precision Masters · 員工培訓系統</p>
+          <p className="mt-1 text-sm text-muted-foreground">Precision Masters — 內部員工培訓系統</p>
         </div>
-        <Card className="p-6">
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="loginId">員工編號</Label>
-              <Input
-                id="loginId"
-                type="text"
-                autoComplete="username"
-                required
-                value={loginId}
-                onChange={(e) => setLoginId(e.target.value)}
-                placeholder="例如：A001"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">密碼</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
-              登入
-            </Button>
-            <p className="text-center text-xs text-muted-foreground">
-              帳號由管理員建立。如忘記密碼，請聯絡管理員。
-            </p>
-          </form>
-        </Card>
-      </div>
+
+        <form onSubmit={onSubmit} className="mt-8 space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="password">本月密碼</Label>
+            <Input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={submitting}
+            />
+          </div>
+          <Button type="submit" className="w-full" disabled={submitting || !password}>
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "進入培訓平台"}
+          </Button>
+          <p className="text-center text-xs text-muted-foreground">
+            密碼每月更換，請向管理員索取。
+          </p>
+        </form>
+      </Card>
     </div>
   );
 }
