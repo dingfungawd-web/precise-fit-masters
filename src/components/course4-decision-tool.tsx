@@ -49,7 +49,7 @@ export function Course4DecisionTool() {
   const queryClient = useQueryClient();
   const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ["course-sheet", "4"],
-    queryFn: () => fetchSheet({ data: { courseId: "4" } }),
+    queryFn: () => fetchSheet("4"),
     staleTime: 30 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: (count, err) => (((err as Error)?.message?.includes("429")) ? false : count < 2),

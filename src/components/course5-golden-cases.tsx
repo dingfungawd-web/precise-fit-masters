@@ -123,7 +123,7 @@ export function Course5GoldenCases() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { data, isLoading, isFetching, error } = useQuery({
     queryKey: ["course-sheet", "5"],
-    queryFn: () => fetchSheet({ data: { courseId: "5" } }),
+    queryFn: () => fetchSheet("5"),
     staleTime: 30 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: (count, err) => (((err as Error)?.message?.includes("429")) ? false : count < 2),
@@ -132,7 +132,7 @@ export function Course5GoldenCases() {
   const refreshSheet = async () => {
     setIsRefreshing(true);
     try {
-      const fresh = await fetchSheet({ data: { courseId: "5", forceRefresh: true } });
+      const fresh = await fetchSheet("5");
       queryClient.setQueryData(["course-sheet", "5"], fresh);
     } finally {
       setIsRefreshing(false);
