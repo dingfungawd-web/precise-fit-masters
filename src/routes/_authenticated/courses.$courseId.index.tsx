@@ -1,11 +1,11 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
+
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { COURSES } from "@/lib/courses";
-import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
+import { fetchCourseSheet, type SheetRow } from "@/lib/data";
 import { COURSE_CONFIG } from "@/lib/course-config";
 import { Course4DecisionTool } from "@/components/course4-decision-tool";
 import { Course5GoldenCases } from "@/components/course5-golden-cases";
@@ -52,11 +52,11 @@ function CoursePage() {
   if (!course) throw notFound();
 
   const config = COURSE_CONFIG[courseId];
-  const fetchSheet = useServerFn(getCourseSheet);
+  const fetchSheet = fetchCourseSheet;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["course-sheet", courseId],
-    queryFn: () => fetchSheet({ data: { courseId } }),
+    queryFn: () => fetchSheet(courseId),
     enabled: !!config,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

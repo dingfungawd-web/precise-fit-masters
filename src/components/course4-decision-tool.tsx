@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, ArrowLeft, Loader2, RotateCcw, ChevronRight, Lightbulb, AlertTriangle, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
+import { fetchCourseSheet, type SheetRow } from "@/lib/data";
 import { parseVideos, YouTubeVideoList } from "@/components/youtube-videos";
 
 // Expected columns in Google Sheet "課程四流程決策樹形圖":
@@ -45,7 +45,7 @@ function toRules(row: SheetRow): Rule[] {
 }
 
 export function Course4DecisionTool() {
-  const fetchSheet = useServerFn(getCourseSheet);
+  const fetchSheet = fetchCourseSheet;
   const queryClient = useQueryClient();
   const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ["course-sheet", "4"],
