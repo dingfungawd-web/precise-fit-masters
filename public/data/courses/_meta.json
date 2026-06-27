@@ -1,0 +1,30 @@
+{
+  "fetchedAt": "2026-06-27T17:31:26.027Z",
+  "courses": [
+    {
+      "courseId": "1",
+      "sheetName": "課程一門窗類型",
+      "rows": 9
+    },
+    {
+      "courseId": "2",
+      "sheetName": "課程二鋁通料",
+      "rows": 5
+    },
+    {
+      "courseId": "3",
+      "sheetName": "課程三產品款式及測量方法",
+      "rows": 10
+    },
+    {
+      "courseId": "4",
+      "sheetName": "課程四流程決策樹形圖",
+      "rows": 20
+    },
+    {
+      "courseId": "5",
+      "sheetName": "課程五黃金案例庫",
+      "rows": 9
+    }
+  ]
+}
