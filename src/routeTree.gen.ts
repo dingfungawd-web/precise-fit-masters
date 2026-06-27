@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedCoursesCourseIdIndexRouteImport } from './routes/_authenticated/courses.$courseId.index'
 import { Route as AuthenticatedCoursesCourseIdItemNameRouteImport } from './routes/_authenticated/courses.$courseId.$itemName'
 
@@ -30,11 +29,6 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedCoursesCourseIdIndexRoute =
   AuthenticatedCoursesCourseIdIndexRouteImport.update({
     id: '/courses/$courseId/',
@@ -50,14 +44,12 @@ const AuthenticatedCoursesCourseIdItemNameRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/courses/$courseId/$itemName': typeof AuthenticatedCoursesCourseIdItemNameRoute
   '/courses/$courseId/': typeof AuthenticatedCoursesCourseIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/courses/$courseId/$itemName': typeof AuthenticatedCoursesCourseIdItemNameRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdIndexRoute
@@ -66,7 +58,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/courses/$courseId/$itemName': typeof AuthenticatedCoursesCourseIdItemNameRoute
   '/_authenticated/courses/$courseId/': typeof AuthenticatedCoursesCourseIdIndexRoute
@@ -75,22 +66,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/admin'
     | '/dashboard'
     | '/courses/$courseId/$itemName'
     | '/courses/$courseId/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/admin'
-    | '/dashboard'
-    | '/courses/$courseId/$itemName'
-    | '/courses/$courseId'
+  to: '/' | '/dashboard' | '/courses/$courseId/$itemName' | '/courses/$courseId'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
-    | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/_authenticated/courses/$courseId/$itemName'
     | '/_authenticated/courses/$courseId/'
@@ -124,13 +108,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/courses/$courseId/': {
       id: '/_authenticated/courses/$courseId/'
       path: '/courses/$courseId'
@@ -149,14 +126,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedCoursesCourseIdItemNameRoute: typeof AuthenticatedCoursesCourseIdItemNameRoute
   AuthenticatedCoursesCourseIdIndexRoute: typeof AuthenticatedCoursesCourseIdIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedCoursesCourseIdItemNameRoute:
     AuthenticatedCoursesCourseIdItemNameRoute,

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, Lightbulb, Search, Wrench, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { getCourseSheet, type SheetRow } from "@/lib/sheets.functions";
+import { fetchCourseSheet, type SheetRow } from "@/lib/data";
 import { parseVideos, parseImageItems, splitItems, YouTubeVideoList, type ParsedVideo, type ParsedImageItem } from "@/components/youtube-videos";
 
 type Case = {
@@ -118,12 +118,12 @@ function parseMedia(raw: string): Media {
 }
 
 export function Course5GoldenCases() {
-  const fetchSheet = useServerFn(getCourseSheet);
+  const fetchSheet = fetchCourseSheet;
   const queryClient = useQueryClient();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { data, isLoading, isFetching, error } = useQuery({
     queryKey: ["course-sheet", "5"],
-    queryFn: () => fetchSheet({ data: { courseId: "5" } }),
+    queryFn: () => fetchSheet("5"),
     staleTime: 30 * 1000,
     gcTime: 10 * 60 * 1000,
     retry: (count, err) => (((err as Error)?.message?.includes("429")) ? false : count < 2),
@@ -132,7 +132,7 @@ export function Course5GoldenCases() {
   const refreshSheet = async () => {
     setIsRefreshing(true);
     try {
-      const fresh = await fetchSheet({ data: { courseId: "5", forceRefresh: true } });
+      const fresh = await fetchSheet("5");
       queryClient.setQueryData(["course-sheet", "5"], fresh);
     } finally {
       setIsRefreshing(false);

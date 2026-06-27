@@ -3,21 +3,16 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
 import { COURSES } from "@/lib/courses";
-import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
 });
 
 function Dashboard() {
-  const { user } = useAuth();
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
       <div className="mb-8">
-        <p className="text-sm text-muted-foreground">
-          歡迎{user?.user_metadata?.display_name ? `，${user.user_metadata.display_name}` : ""}
-        </p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">六大課程</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">六大課程</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           選擇課程開始學習。內容會由 Google Sheets 自動同步。
         </p>
