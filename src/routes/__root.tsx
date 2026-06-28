@@ -4,11 +4,8 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
-  HeadContent,
-  Scripts,
 } from "@tanstack/react-router";
 
-import appCss from "../styles.css?url";
 import { GateProvider } from "@/lib/gate-context";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -63,42 +60,10 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "全港最精準度尺培訓平台" },
-      { name: "description", content: "全港最精準度尺培訓平台 — 內部員工培訓系統" },
-      { property: "og:title", content: "全港最精準度尺培訓平台" },
-      { name: "twitter:title", content: "全港最精準度尺培訓平台" },
-      { property: "og:description", content: "全港最精準度尺培訓平台 — 內部員工培訓系統" },
-      { name: "twitter:description", content: "全港最精準度尺培訓平台 — 內部員工培訓系統" },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1c895c0b-66dd-4e76-9fd5-45591a24f083/id-preview-bc36b05e--e8edcbcd-4117-4b58-ae6f-9a005527e659.lovable.app-1781664823218.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1c895c0b-66dd-4e76-9fd5-45591a24f083/id-preview-bc36b05e--e8edcbcd-4117-4b58-ae6f-9a005527e659.lovable.app-1781664823218.png" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:type", content: "website" },
-    ],
-    links: [{ rel: "stylesheet", href: appCss }],
-  }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
 });
-
-function RootShell({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="zh-Hant">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();

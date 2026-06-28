@@ -40,25 +40,22 @@ jobs:
         env:
           GH_PAGES: "1"
           STATIC_BASE: "/${{ github.event.repository.name }}/"
-          NITRO_PRESET: static
         run: bun run build
 
       - name: Prepare Pages artifact
         run: |
-          OUT=.output/public
+          OUT=dist
           if [ ! -d "$OUT" ]; then
             echo "::error::Expected static output at $OUT not found"
-            ls -la .output || true
             exit 1
           fi
-          # SPA fallback for any non-prerendered deep link
-          [ -f "$OUT/404.html" ] || cp "$OUT/index.html" "$OUT/404.html"
-          # Disable Jekyll processing on GitHub Pages
+          # SPA fallback so deep links work on GitHub Pages
+          cp "$OUT/index.html" "$OUT/404.html"
           touch "$OUT/.nojekyll"
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .output/public
+          path: dist
 
   deploy:
     needs: build

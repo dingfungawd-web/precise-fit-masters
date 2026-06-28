@@ -1,71 +1,33 @@
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually:
-//   tanstackStart, viteReact, tailwindcss, tsConfigPaths, cloudflare (build-only),
-//   componentTagger (dev-only), VITE_* env injection, @ path alias, React/TanStack dedupe,
-//   error logger plugins, sandbox detection.
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
-import { readFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 
-// --- Static build switch ------------------------------------------------
-// Set GH_PAGES=1 in CI to produce a static site for GitHub Pages.
-// In Lovable preview / normal dev, this stays off and the original
-// Cloudflare-targeted dynamic build is used (no behaviour change).
-const isStatic = process.env.GH_PAGES === "1";
-const base = process.env.STATIC_BASE || "/precision-masters/";
-
-// Enumerate every page that should be pre-rendered to HTML.
-function collectPages(): { path: string; prerender: { enabled: true; outputPath: string; autoSubfolderIndex: true; crawlLinks: false; retryCount: 2 } }[] {
-  const pages: string[] = ["/", "/dashboard"];
-  for (let i = 1; i <= 6; i++) pages.push(`/courses/${i}`);
-
-  const dataDir = join(process.cwd(), "public", "data", "courses");
-  const detailCourses: { id: string; titleField: string }[] = [
-    { id: "1", titleField: "款式名稱" },
-    { id: "2", titleField: "通料名稱" },
-    { id: "3", titleField: "款式名稱" },
-  ];
-
-  for (const c of detailCourses) {
-    const f = join(dataDir, `${c.id}.json`);
-    if (!existsSync(f)) continue;
-    try {
-      const json = JSON.parse(readFileSync(f, "utf8")) as { rows?: Record<string, unknown>[] };
-      const seen = new Set<string>();
-      for (const r of json.rows ?? []) {
-        const name = String(r[c.titleField] ?? "").trim();
-        if (!name || seen.has(name)) continue;
-        seen.add(name);
-        pages.push(`/courses/${c.id}/${encodeURIComponent(name)}`);
-      }
-    } catch (e) {
-      console.warn(`[prerender] skipped course ${c.id}:`, (e as Error).message);
-    }
-  }
-  return pages.map((path) => ({
-    path,
-    prerender: {
-      enabled: true,
-      outputPath: path,
-      autoSubfolderIndex: true,
-      crawlLinks: false,
-      retryCount: 2,
-    },
-  }));
-}
+// Pure Vite + React SPA. Builds to dist/, ready for GitHub Pages.
+// Set GH_PAGES=1 + STATIC_BASE="/precision-masters/" in CI.
+const base = process.env.GH_PAGES === "1" ? (process.env.STATIC_BASE || "/precision-masters/") : "/";
 
 export default defineConfig({
-  tanstackStart: {
-    server: { entry: "server" },
-    ...(isStatic
-      ? {
-          pages: collectPages(),
-        }
-      : {}),
+  base,
+  plugins: [
+    TanStackRouterVite({
+      target: "react",
+      autoCodeSplitting: true,
+      routesDirectory: "src/routes",
+      generatedRouteTree: "src/routeTree.gen.ts",
+    }),
+    react(),
+    tailwindcss(),
+    tsconfigPaths(),
+  ],
+  server: {
+    host: "::",
+    port: 8080,
+    allowedHosts: true,
   },
-  ...(isStatic
-    ? {
-        nitro: { preset: "node-server" },
-        vite: { base },
-      }
-    : {}),
+  build: {
+    outDir: "dist",
+    sourcemap: false,
+  },
 });
