@@ -64,7 +64,7 @@ export default defineConfig({
   },
   ...(isStatic
     ? {
-        nitro: { preset: "static" },
+        nitro: { preset: "node-server" },
         vite: { base },
       }
     : {}),
