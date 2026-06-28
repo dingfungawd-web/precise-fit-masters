@@ -58,7 +58,13 @@ export default defineConfig({
     server: { entry: "server" },
     ...(isStatic
       ? {
+          spa: {
+            enabled: true,
+            maskPath: "/",
+            prerender: { outputPath: "/" },
+          },
           pages: collectPages(),
+          prerender: { enabled: true, concurrency: 4, failOnError: true },
         }
       : {}),
   },
