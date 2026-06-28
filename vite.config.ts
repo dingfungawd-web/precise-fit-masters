@@ -14,7 +14,7 @@ const isStatic = process.env.GH_PAGES === "1";
 const base = process.env.STATIC_BASE || "/precision-masters/";
 
 // Enumerate every page that should be pre-rendered to HTML.
-function collectPages(): { path: string }[] {
+function collectPages(): { path: string; prerender: { enabled: true; outputPath: string; autoSubfolderIndex: true; crawlLinks: false; retryCount: 2 } }[] {
   const pages: string[] = ["/", "/dashboard"];
   for (let i = 1; i <= 6; i++) pages.push(`/courses/${i}`);
 
@@ -41,7 +41,16 @@ function collectPages(): { path: string }[] {
       console.warn(`[prerender] skipped course ${c.id}:`, (e as Error).message);
     }
   }
-  return pages.map((path) => ({ path }));
+  return pages.map((path) => ({
+    path,
+    prerender: {
+      enabled: true,
+      outputPath: path,
+      autoSubfolderIndex: true,
+      crawlLinks: false,
+      retryCount: 2,
+    },
+  }));
 }
 
 export default defineConfig({
@@ -50,18 +59,12 @@ export default defineConfig({
     ...(isStatic
       ? {
           pages: collectPages(),
-          prerender: {
-            enabled: true,
-            crawlLinks: false,
-            retryCount: 2,
-          },
-          spa: { enabled: true },
         }
       : {}),
   },
   ...(isStatic
     ? {
-        nitro: { preset: "static" },
+        nitro: { preset: "node-server" },
         vite: { base },
       }
     : {}),
