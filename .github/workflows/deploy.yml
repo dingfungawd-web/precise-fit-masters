@@ -1,0 +1,71 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Refresh Google Sheets data once daily at 02:00 UTC (10:00 HKT)
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Fetch Google Sheets data
+        env:
+          GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: bun run scripts/fetch-sheets.mjs
+
+      - name: Build static site
+        env:
+          GH_PAGES: "1"
+          STATIC_BASE: "/${{ github.event.repository.name }}/"
+          NITRO_PRESET: static
+        run: bun run build
+
+      - name: Prepare Pages artifact
+        run: |
+          OUT=.output/public
+          if [ ! -d "$OUT" ]; then
+            echo "::error::Expected static output at $OUT not found"
+            ls -la .output || true
+            exit 1
+          fi
+          # SPA fallback for any non-prerendered deep link
+          [ -f "$OUT/404.html" ] || cp "$OUT/index.html" "$OUT/404.html"
+          # Disable Jekyll processing on GitHub Pages
+          touch "$OUT/.nojekyll"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .output/public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
