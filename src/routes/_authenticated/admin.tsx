@@ -143,6 +143,42 @@ function AdminPage() {
     }
   }
 
+  if (!pinOk) {
+    return (
+      <main className="mx-auto max-w-md px-6 py-12">
+        <Button asChild variant="ghost" size="sm" className="mb-4">
+          <Link to="/dashboard">
+            <ArrowLeft className="h-4 w-4" /> 返回主頁
+          </Link>
+        </Button>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ShieldCheck className="h-5 w-5 text-primary" /> 管理員驗證
+            </CardTitle>
+            <CardDescription>請輸入管理員 PIN 以進入管理頁面。</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePinSubmit} className="grid gap-3">
+              <Input
+                type="password"
+                placeholder="管理員 PIN"
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value)}
+                autoFocus
+                required
+              />
+              <Button type="submit" disabled={pinBusy}>
+                {pinBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {pinBusy ? "驗證中…" : "進入"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto max-w-3xl px-6 py-8">
       <Button asChild variant="ghost" size="sm" className="mb-4">
