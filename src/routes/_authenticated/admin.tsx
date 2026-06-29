@@ -41,6 +41,7 @@ function AdminPage() {
   const [newPwd, setNewPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
   const [busy, setBusy] = useState(false);
+  const [refreshBusy, setRefreshBusy] = useState(false);
   const [hashPreview, setHashPreview] = useState<string>("");
 
   useEffect(() => {
