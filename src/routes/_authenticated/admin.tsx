@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2, ShieldCheck, KeyRound, RefreshCw } from "lucide-react";
+import { ArrowLeft, Loader2, ShieldCheck, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,7 +41,6 @@ function AdminPage() {
   const [newPwd, setNewPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
   const [busy, setBusy] = useState(false);
-  const [refreshBusy, setRefreshBusy] = useState(false);
   const [hashPreview, setHashPreview] = useState<string>("");
 
   useEffect(() => {
@@ -153,37 +152,6 @@ function AdminPage() {
     }
   }
 
-  async function handleRefreshSheets() {
-    if (!gh.owner || !gh.repo || !gh.token) {
-      toast.error("請先填寫 GitHub 設定（owner / repo / token）");
-      return;
-    }
-    setRefreshBusy(true);
-    try {
-      const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/actions/workflows/deploy.yml/dispatches`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${gh.token}`,
-          Accept: "application/vnd.github+json",
-          "X-GitHub-Api-Version": "2022-11-28",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ ref: gh.branch || "main" }),
-      });
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(`觸發失敗 (${res.status}): ${msg.slice(0, 200)}`);
-      }
-      saveGh(gh);
-      toast.success("✅ 已觸發！GitHub Actions 正在重新抓取 Sheet 並部署，約 1–2 分鐘後生效。");
-    } catch (err: any) {
-      toast.error(err?.message ?? "觸發失敗");
-    } finally {
-      setRefreshBusy(false);
-    }
-  }
-
   if (!pinOk) {
     return (
       <main className="mx-auto max-w-md px-6 py-12">
@@ -253,8 +221,7 @@ function AdminPage() {
           <CardDescription>
             喺 GitHub → Settings → Developer settings → Personal access tokens → Fine-grained
             tokens 建立一個 token，repository access 揀返呢個 repo，permissions 開
-            <strong> Contents: Read and write</strong> 同 <strong>Actions: Read and write</strong>
-            （後者用嚟一鍵重新抓 Sheet）。Token 只會儲存喺你呢部瀏覽器嘅 localStorage。
+            <strong> Contents: Read and write</strong>。Token 只會儲存喺你呢部瀏覽器嘅 localStorage。
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2">
@@ -294,24 +261,6 @@ function AdminPage() {
               onChange={(e) => setGh({ ...gh, token: e.target.value.trim() })}
             />
           </div>
-        </CardContent>
-      </Card>
-
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <RefreshCw className="h-4 w-4 text-primary" /> 重新抓取 Google Sheet
-          </CardTitle>
-          <CardDescription>
-            Google Sheet 加咗新內容（影片、圖片、行）後撳呢個掣，即刻觸發 GitHub Actions 重新 fetch + 部署。
-            預設每日 10:00 (HKT) 會自動跑一次。
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={handleRefreshSheets} disabled={refreshBusy} className="w-full">
-            {refreshBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-            {refreshBusy ? "觸發中…" : "立即重新抓取並部署"}
-          </Button>
         </CardContent>
       </Card>
 
