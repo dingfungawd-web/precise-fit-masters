@@ -93,11 +93,6 @@ function AdminPage() {
 
       // 2. Compute new hash
       const newHash = await sha256Hex(newPwd.trim());
-      const newContent = JSON.stringify(
-        { passwordSha256: newHash, updatedAt: new Date().toISOString() },
-        null,
-        2,
-      ) + "\n";
 
       const apiBase = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${AUTH_PATH}`;
       const headers = {
@@ -114,6 +109,20 @@ function AdminPage() {
       }
       const fileMeta = await getRes.json();
       const sha = fileMeta.sha as string;
+
+      // Preserve existing fields such as adminPinSha256 when rotating password.
+      let existingConfig: Record<string, unknown> = {};
+      try {
+        const rawContent = String(fileMeta.content ?? "").replace(/\s/g, "");
+        existingConfig = JSON.parse(decodeURIComponent(escape(atob(rawContent))));
+      } catch {
+        existingConfig = {};
+      }
+      const newContent = JSON.stringify(
+        { ...existingConfig, passwordSha256: newHash, updatedAt: new Date().toISOString() },
+        null,
+        2,
+      ) + "\n";
 
       // 4. PUT new content
       const putRes = await fetch(apiBase, {
