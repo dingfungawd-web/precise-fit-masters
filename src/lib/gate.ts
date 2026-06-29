@@ -46,7 +46,6 @@ export async function verifyAdminPin(pin: string): Promise<boolean> {
   if (!cachedAdminPin) return false;
   const hash = await sha256Hex(pin.trim());
   return hash === cachedAdminPin;
-  return cachedHash;
 }
 
 export async function readGateStateAsync(): Promise<{ unlocked: boolean }> {
