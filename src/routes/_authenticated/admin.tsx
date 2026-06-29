@@ -1,0 +1,247 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Loader2, ShieldCheck, KeyRound } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { toast } from "sonner";
+import { loadPasswordHash, sha256Hex } from "@/lib/gate";
+
+export const Route = createFileRoute("/_authenticated/admin")({
+  component: AdminPage,
+});
+
+const LS_KEY = "pm-admin-gh-v1";
+const AUTH_PATH = "public/data/auth.json";
+
+type GhConfig = { owner: string; repo: string; branch: string; token: string };
+
+function loadGh(): GhConfig {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) return { branch: "main", ...JSON.parse(raw) };
+  } catch {}
+  return { owner: "", repo: "precision-masters", branch: "main", token: "" };
+}
+
+function saveGh(cfg: GhConfig) {
+  localStorage.setItem(LS_KEY, JSON.stringify(cfg));
+}
+
+function AdminPage() {
+  const [gh, setGh] = useState<GhConfig>(() => ({ owner: "", repo: "", branch: "main", token: "" }));
+  const [currentPwd, setCurrentPwd] = useState("");
+  const [newPwd, setNewPwd] = useState("");
+  const [confirmPwd, setConfirmPwd] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [hashPreview, setHashPreview] = useState<string>("");
+
+  useEffect(() => {
+    setGh(loadGh());
+    loadPasswordHash().then((h) => setHashPreview(h.slice(0, 12) + "…")).catch(() => {});
+  }, []);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!gh.owner || !gh.repo || !gh.token) {
+      toast.error("請先填寫 GitHub 設定");
+      return;
+    }
+    if (newPwd.length < 6) {
+      toast.error("新密碼至少 6 個字元");
+      return;
+    }
+    if (newPwd !== confirmPwd) {
+      toast.error("兩次新密碼不一致");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      // 1. Verify current password
+      const currentHash = await loadPasswordHash(true);
+      const inputHash = await sha256Hex(currentPwd.trim());
+      if (inputHash !== currentHash) {
+        toast.error("目前密碼不正確");
+        return;
+      }
+
+      // 2. Compute new hash
+      const newHash = await sha256Hex(newPwd.trim());
+      const newContent = JSON.stringify(
+        { passwordSha256: newHash, updatedAt: new Date().toISOString() },
+        null,
+        2,
+      ) + "\n";
+
+      const apiBase = `https://api.github.com/repos/${gh.owner}/${gh.repo}/contents/${AUTH_PATH}`;
+      const headers = {
+        Authorization: `Bearer ${gh.token}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+      };
+
+      // 3. Get current file sha
+      const getRes = await fetch(`${apiBase}?ref=${encodeURIComponent(gh.branch)}`, { headers });
+      if (!getRes.ok) {
+        const msg = await getRes.text();
+        throw new Error(`讀取 GitHub 檔案失敗 (${getRes.status}): ${msg.slice(0, 200)}`);
+      }
+      const fileMeta = await getRes.json();
+      const sha = fileMeta.sha as string;
+
+      // 4. PUT new content
+      const putRes = await fetch(apiBase, {
+        method: "PUT",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: `chore: rotate site password (${new Date().toISOString().slice(0, 10)})`,
+          content: btoa(unescape(encodeURIComponent(newContent))),
+          sha,
+          branch: gh.branch,
+        }),
+      });
+      if (!putRes.ok) {
+        const msg = await putRes.text();
+        throw new Error(`更新失敗 (${putRes.status}): ${msg.slice(0, 200)}`);
+      }
+
+      saveGh(gh);
+      setCurrentPwd("");
+      setNewPwd("");
+      setConfirmPwd("");
+      toast.success("✅ 已更新！GitHub Actions 約 1–2 分鐘後自動重新部署，部署完成後所有同事下次解鎖須用新密碼。");
+    } catch (err: any) {
+      toast.error(err?.message ?? "更新失敗");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <main className="mx-auto max-w-3xl px-6 py-8">
+      <Button asChild variant="ghost" size="sm" className="mb-4">
+        <Link to="/dashboard">
+          <ArrowLeft className="h-4 w-4" /> 返回主頁
+        </Link>
+      </Button>
+
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <ShieldCheck className="h-6 w-6 text-primary" /> 管理 — 修改登入密碼
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          目前密碼 hash：<code className="text-xs">{hashPreview || "讀取中…"}</code>
+        </p>
+      </div>
+
+      <Alert className="mb-6">
+        <KeyRound className="h-4 w-4" />
+        <AlertTitle>運作原理</AlertTitle>
+        <AlertDescription className="text-sm">
+          密碼以 SHA-256 hash 形式儲存於 <code>public/data/auth.json</code>。改密碼會經 GitHub API
+          直接 commit 新 hash，GitHub Actions 隨即自動重新部署網站（約 1–2 分鐘）。
+          已解鎖嘅同事一改密碼，下次自動失效要重新輸入。
+        </AlertDescription>
+      </Alert>
+
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-base">GitHub 設定（首次使用）</CardTitle>
+          <CardDescription>
+            喺 GitHub → Settings → Developer settings → Personal access tokens → Fine-grained
+            tokens 建立一個 token，repository access 揀返呢個 repo，permissions 開
+            <strong> Contents: Read and write</strong>。Token 只會儲存喺你呢部瀏覽器嘅 localStorage。
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-1.5">
+            <Label htmlFor="owner">GitHub 帳號 / 組織</Label>
+            <Input
+              id="owner"
+              placeholder="例：your-github-username"
+              value={gh.owner}
+              onChange={(e) => setGh({ ...gh, owner: e.target.value.trim() })}
+            />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="repo">Repository 名稱</Label>
+            <Input
+              id="repo"
+              placeholder="precision-masters"
+              value={gh.repo}
+              onChange={(e) => setGh({ ...gh, repo: e.target.value.trim() })}
+            />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="branch">Branch</Label>
+            <Input
+              id="branch"
+              value={gh.branch}
+              onChange={(e) => setGh({ ...gh, branch: e.target.value.trim() || "main" })}
+            />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="token">Personal Access Token</Label>
+            <Input
+              id="token"
+              type="password"
+              placeholder="github_pat_..."
+              value={gh.token}
+              onChange={(e) => setGh({ ...gh, token: e.target.value.trim() })}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">修改密碼</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="grid gap-4">
+            <div className="grid gap-1.5">
+              <Label htmlFor="current">目前密碼</Label>
+              <Input
+                id="current"
+                type="password"
+                value={currentPwd}
+                onChange={(e) => setCurrentPwd(e.target.value)}
+                autoComplete="current-password"
+                required
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="new">新密碼（至少 6 字元）</Label>
+              <Input
+                id="new"
+                type="password"
+                value={newPwd}
+                onChange={(e) => setNewPwd(e.target.value)}
+                autoComplete="new-password"
+                required
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="confirm">再次輸入新密碼</Label>
+              <Input
+                id="confirm"
+                type="password"
+                value={confirmPwd}
+                onChange={(e) => setConfirmPwd(e.target.value)}
+                autoComplete="new-password"
+                required
+              />
+            </div>
+            <Button type="submit" disabled={busy} className="w-full">
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {busy ? "處理中…" : "更新密碼並部署"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </main>
+  );
+}

@@ -1,18 +1,14 @@
 // Shared-password site gate (frontend-only).
 //
-// To change the password each month, run in any terminal:
-//
-//   node -e "console.log(require('crypto').createHash('sha256').update('YOUR_NEW_PASSWORD').digest('hex'))"
-//
-// Paste the output below into PASSWORD_SHA256. Commit + redeploy.
-// Anyone with an active unlock keeps access until the next 1st of the month.
-
-export const PASSWORD_SHA256 =
-  "54e8bf2f723817c5f6930ec9b93df3d9bcc4565c9dd8e243d605917fae68c27d"; // pm-2026
+// Password hash is fetched at runtime from /data/auth.json so admins can
+// rotate it via the /admin page without a code change. Anyone with an active
+// unlock keeps access until the next 1st of the month, OR until the hash
+// changes (whichever comes first).
 
 const STORAGE_KEY = "pm-gate-v1";
+const AUTH_URL = `${import.meta.env.BASE_URL}data/auth.json`;
 
-async function sha256Hex(input: string): Promise<string> {
+export async function sha256Hex(input: string): Promise<string> {
   const data = new TextEncoder().encode(input);
   const buf = await crypto.subtle.digest("SHA-256", data);
   return Array.from(new Uint8Array(buf))
@@ -28,7 +24,18 @@ function nextMonthFirstUTC(now = new Date()): number {
 
 type Stored = { until: number; hash: string };
 
-export function readGateState(): { unlocked: boolean } {
+let cachedHash: string | null = null;
+
+export async function loadPasswordHash(force = false): Promise<string> {
+  if (cachedHash && !force) return cachedHash;
+  const res = await fetch(`${AUTH_URL}?t=${Date.now()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to load auth config");
+  const json = (await res.json()) as { passwordSha256: string };
+  cachedHash = json.passwordSha256.toLowerCase();
+  return cachedHash;
+}
+
+export async function readGateStateAsync(): Promise<{ unlocked: boolean }> {
   if (typeof window === "undefined") return { unlocked: false };
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -36,7 +43,8 @@ export function readGateState(): { unlocked: boolean } {
     const parsed = JSON.parse(raw) as Stored;
     if (!parsed?.until || !parsed?.hash) return { unlocked: false };
     if (Date.now() >= parsed.until) return { unlocked: false };
-    if (parsed.hash !== PASSWORD_SHA256) return { unlocked: false };
+    const current = await loadPasswordHash();
+    if (parsed.hash !== current) return { unlocked: false };
     return { unlocked: true };
   } catch {
     return { unlocked: false };
@@ -44,8 +52,9 @@ export function readGateState(): { unlocked: boolean } {
 }
 
 export async function tryUnlock(password: string): Promise<boolean> {
+  const current = await loadPasswordHash(true);
   const hash = await sha256Hex(password.trim());
-  if (hash !== PASSWORD_SHA256) return false;
+  if (hash !== current) return false;
   const stored: Stored = { until: nextMonthFirstUTC(), hash };
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
   return true;

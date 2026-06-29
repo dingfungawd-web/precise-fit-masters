@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import { readGateState, tryUnlock, lockGate } from "@/lib/gate";
+import { readGateStateAsync, tryUnlock, lockGate } from "@/lib/gate";
 
 interface GateContextValue {
   unlocked: boolean;
@@ -15,8 +15,15 @@ export function GateProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setUnlocked(readGateState().unlocked);
-    setReady(true);
+    let cancelled = false;
+    readGateStateAsync().then((s) => {
+      if (cancelled) return;
+      setUnlocked(s.unlocked);
+      setReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const unlock = useCallback(async (password: string) => {
