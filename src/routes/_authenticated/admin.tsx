@@ -153,6 +153,37 @@ function AdminPage() {
     }
   }
 
+  async function handleRefreshSheets() {
+    if (!gh.owner || !gh.repo || !gh.token) {
+      toast.error("請先填寫 GitHub 設定（owner / repo / token）");
+      return;
+    }
+    setRefreshBusy(true);
+    try {
+      const url = `https://api.github.com/repos/${gh.owner}/${gh.repo}/actions/workflows/deploy.yml/dispatches`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${gh.token}`,
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ref: gh.branch || "main" }),
+      });
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(`觸發失敗 (${res.status}): ${msg.slice(0, 200)}`);
+      }
+      saveGh(gh);
+      toast.success("✅ 已觸發！GitHub Actions 正在重新抓取 Sheet 並部署，約 1–2 分鐘後生效。");
+    } catch (err: any) {
+      toast.error(err?.message ?? "觸發失敗");
+    } finally {
+      setRefreshBusy(false);
+    }
+  }
+
   if (!pinOk) {
     return (
       <main className="mx-auto max-w-md px-6 py-12">
