@@ -297,6 +297,24 @@ function AdminPage() {
         </CardContent>
       </Card>
 
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <RefreshCw className="h-4 w-4 text-primary" /> 重新抓取 Google Sheet
+          </CardTitle>
+          <CardDescription>
+            Google Sheet 加咗新內容（影片、圖片、行）後撳呢個掣，即刻觸發 GitHub Actions 重新 fetch + 部署。
+            預設每日 10:00 (HKT) 會自動跑一次。
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={handleRefreshSheets} disabled={refreshBusy} className="w-full">
+            {refreshBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            {refreshBusy ? "觸發中…" : "立即重新抓取並部署"}
+          </Button>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">修改密碼</CardTitle>
