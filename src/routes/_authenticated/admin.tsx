@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { loadPasswordHash, sha256Hex } from "@/lib/gate";
+import { loadPasswordHash, sha256Hex, verifyAdminPin } from "@/lib/gate";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
@@ -30,7 +30,12 @@ function saveGh(cfg: GhConfig) {
   localStorage.setItem(LS_KEY, JSON.stringify(cfg));
 }
 
+const PIN_SESSION_KEY = "pm-admin-pin-ok-v1";
+
 function AdminPage() {
+  const [pinOk, setPinOk] = useState(false);
+  const [pinInput, setPinInput] = useState("");
+  const [pinBusy, setPinBusy] = useState(false);
   const [gh, setGh] = useState<GhConfig>(() => ({ owner: "", repo: "", branch: "main", token: "" }));
   const [currentPwd, setCurrentPwd] = useState("");
   const [newPwd, setNewPwd] = useState("");
@@ -39,9 +44,27 @@ function AdminPage() {
   const [hashPreview, setHashPreview] = useState<string>("");
 
   useEffect(() => {
+    if (sessionStorage.getItem(PIN_SESSION_KEY) === "1") setPinOk(true);
     setGh(loadGh());
     loadPasswordHash().then((h) => setHashPreview(h.slice(0, 12) + "…")).catch(() => {});
   }, []);
+
+  async function handlePinSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setPinBusy(true);
+    try {
+      const ok = await verifyAdminPin(pinInput);
+      if (!ok) {
+        toast.error("管理員 PIN 不正確");
+        return;
+      }
+      sessionStorage.setItem(PIN_SESSION_KEY, "1");
+      setPinOk(true);
+      setPinInput("");
+    } finally {
+      setPinBusy(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -118,6 +141,42 @@ function AdminPage() {
     } finally {
       setBusy(false);
     }
+  }
+
+  if (!pinOk) {
+    return (
+      <main className="mx-auto max-w-md px-6 py-12">
+        <Button asChild variant="ghost" size="sm" className="mb-4">
+          <Link to="/dashboard">
+            <ArrowLeft className="h-4 w-4" /> 返回主頁
+          </Link>
+        </Button>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ShieldCheck className="h-5 w-5 text-primary" /> 管理員驗證
+            </CardTitle>
+            <CardDescription>請輸入管理員 PIN 以進入管理頁面。</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePinSubmit} className="grid gap-3">
+              <Input
+                type="password"
+                placeholder="管理員 PIN"
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value)}
+                autoFocus
+                required
+              />
+              <Button type="submit" disabled={pinBusy}>
+                {pinBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {pinBusy ? "驗證中…" : "進入"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </main>
+    );
   }
 
   return (

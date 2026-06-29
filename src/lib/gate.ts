@@ -25,14 +25,27 @@ function nextMonthFirstUTC(now = new Date()): number {
 type Stored = { until: number; hash: string };
 
 let cachedHash: string | null = null;
+let cachedAdminPin: string | null = null;
+
+async function loadAuthConfig(): Promise<void> {
+  const res = await fetch(`${AUTH_URL}?t=${Date.now()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to load auth config");
+  const json = (await res.json()) as { passwordSha256: string; adminPinSha256?: string };
+  cachedHash = json.passwordSha256.toLowerCase();
+  cachedAdminPin = json.adminPinSha256?.toLowerCase() ?? null;
+}
 
 export async function loadPasswordHash(force = false): Promise<string> {
   if (cachedHash && !force) return cachedHash;
-  const res = await fetch(`${AUTH_URL}?t=${Date.now()}`, { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to load auth config");
-  const json = (await res.json()) as { passwordSha256: string };
-  cachedHash = json.passwordSha256.toLowerCase();
-  return cachedHash;
+  await loadAuthConfig();
+  return cachedHash!;
+}
+
+export async function verifyAdminPin(pin: string): Promise<boolean> {
+  await loadAuthConfig();
+  if (!cachedAdminPin) return false;
+  const hash = await sha256Hex(pin.trim());
+  return hash === cachedAdminPin;
 }
 
 export async function readGateStateAsync(): Promise<{ unlocked: boolean }> {
