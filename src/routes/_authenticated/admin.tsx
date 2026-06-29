@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { loadPasswordHash, sha256Hex } from "@/lib/gate";
+import { loadPasswordHash, sha256Hex, verifyAdminPin } from "@/lib/gate";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
