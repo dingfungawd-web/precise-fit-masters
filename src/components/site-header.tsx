@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Ruler, LogOut } from "lucide-react";
+import { Ruler, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGate } from "@/lib/gate-context";
 
@@ -19,16 +19,23 @@ export function SiteHeader() {
             <div className="text-xs text-muted-foreground">Precision Masters</div>
           </div>
         </Link>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            lock();
-            navigate({ to: "/" });
-          }}
-        >
-          <LogOut className="h-4 w-4" /> 鎖定
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/admin">
+              <Settings className="h-4 w-4" /> 管理
+            </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              lock();
+              navigate({ to: "/" });
+            }}
+          >
+            <LogOut className="h-4 w-4" /> 鎖定
+          </Button>
+        </div>
       </div>
     </header>
   );
