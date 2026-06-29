@@ -253,7 +253,8 @@ function AdminPage() {
           <CardDescription>
             喺 GitHub → Settings → Developer settings → Personal access tokens → Fine-grained
             tokens 建立一個 token，repository access 揀返呢個 repo，permissions 開
-            <strong> Contents: Read and write</strong>。Token 只會儲存喺你呢部瀏覽器嘅 localStorage。
+            <strong> Contents: Read and write</strong> 同 <strong>Actions: Read and write</strong>
+            （後者用嚟一鍵重新抓 Sheet）。Token 只會儲存喺你呢部瀏覽器嘅 localStorage。
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2">
