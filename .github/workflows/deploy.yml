@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
   schedule:
-    # Refresh Google Sheets data once daily at 02:00 UTC (10:00 HKT)
-    - cron: "0 2 * * *"
+    # Refresh Google Sheets data once daily at 16:00 UTC (00:00 HKT)
+    - cron: "0 16 * * *"
   workflow_dispatch:
 
 permissions:
