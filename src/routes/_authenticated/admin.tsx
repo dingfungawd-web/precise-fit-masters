@@ -30,7 +30,12 @@ function saveGh(cfg: GhConfig) {
   localStorage.setItem(LS_KEY, JSON.stringify(cfg));
 }
 
+const PIN_SESSION_KEY = "pm-admin-pin-ok-v1";
+
 function AdminPage() {
+  const [pinOk, setPinOk] = useState(false);
+  const [pinInput, setPinInput] = useState("");
+  const [pinBusy, setPinBusy] = useState(false);
   const [gh, setGh] = useState<GhConfig>(() => ({ owner: "", repo: "", branch: "main", token: "" }));
   const [currentPwd, setCurrentPwd] = useState("");
   const [newPwd, setNewPwd] = useState("");
@@ -39,9 +44,27 @@ function AdminPage() {
   const [hashPreview, setHashPreview] = useState<string>("");
 
   useEffect(() => {
+    if (sessionStorage.getItem(PIN_SESSION_KEY) === "1") setPinOk(true);
     setGh(loadGh());
     loadPasswordHash().then((h) => setHashPreview(h.slice(0, 12) + "…")).catch(() => {});
   }, []);
+
+  async function handlePinSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setPinBusy(true);
+    try {
+      const ok = await verifyAdminPin(pinInput);
+      if (!ok) {
+        toast.error("管理員 PIN 不正確");
+        return;
+      }
+      sessionStorage.setItem(PIN_SESSION_KEY, "1");
+      setPinOk(true);
+      setPinInput("");
+    } finally {
+      setPinBusy(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
